@@ -1,0 +1,477 @@
+Mục lục:
+1. Data type, rvalue, lv
+2. OPERATORS
+3. POINTER
+4. FUNCTION POINTR
+5. NAMESPACE
+6. FUNCTION
+7. STATIC DISPATH, DYNAMIC DISPATH
+8. CLASS
+ - VIRTUAL METHOD -> đa hình
+ - CONSTRUCTOR 
+ - member initializer list
+ - Operator Overloading in C++
+ - CONST OBJECT
+9. STL Library
+
+=================================================================================
+
+Data type: có 2 loại, 1 là calueác kiểu dữ liệu có sẵn, 2 là kiểu do user define ra, kể cả kiểu con trỏ hàm nhé !
+
+Hiện tại mình sẽ định nghĩa nó như thế này: 1 lvalue là 1 expression(n là 1 expression mà n+n cũng là 1 expression) mà refer tới 1 object, là cái mình có thể nhìn thấy, có thể get được địa chỉ, có thể sửa được giá trị tại cái địa chỉ đó, ngược lại thì là rvalue 
+
+void function(int& n){
+    LOG << "lvalue reference";
+} (1)
+
+// rvalue reference
+void function(int&& n){
+    LOG << sizeof(n); // =4
+    n = 3; // yes, it can
+    LOG << "rvalue reference: " << n; // =3
+} (2)
+
+int main (){
+
+    function(9); // call rvalue reference (2), cũng có thể call đến lvalua reference (1) nếu paramater là const int& nếu k define (2)
+    function(global); // call lvalue reference (1), có thể call đến rvalue reference (2) nếu call như sau: function(std::move(global))
+    return 0;
+}
+
+=================================================================================
+
+OPERATORS
+
+- về unary operator nó là toán tử 1 ngôi, nghĩa là chỉ cần 1 toán hạng để sử dụng được, ví dụ như ++ hay --
+- về binary operator thì nó hoạt động trên 2 toán hạng, đơn giản như ==, !=, >, <...có 1 loại đặc biệt là toán tử bit(&, |, ^), các toạn hạng của nó sẽ phải chuyển sang kiểu nhị phân 1 với 0, và ghép chúng lần lượt theo toán tử để ra kết quả
+- toán tử logic: &&, ||
+- toán tử 3 ngôi, ví dụ ((a>b?a:b)>c)? (a>b?a:b):c, ban đầu so sánh a vs b, sau đó so sánh vs c
+
+- tham chiếu thì khai báo kèm theo &, hiểu đơn giản nó như 1 cái tên thứ 2 cho 1 cái biến đã tồn tại, k phải là 1 biến mới
+=>phải khởi tạo nó tham chiếu đến 1 biến chứ không được khai báo rồi để đó, nó sẽ lỗi(con trỏ thì không)
+
+- khi truyền tham số theo dạng tham chiếu đến hàm thì nó sẽ tránh việc tạo ra 1 đối tượng tạm như việc truyền tham trị, đồng nghĩa nó cũng có khả năng thay đổi giá trị của thằng gốc truyền đến -> để chắc chắn thì ta nên thêm const vào, nhưng khi đó phải chú ý kiểu return về, khi tham số là const & thì k thể return về kiểu tham chiếu, lý do cũng giống như nếu tham số là kiểu tham chiếu thì k được truyền hằng số vào
+
+- nó khác con trỏ ở chỗ, con trỏ nắm địa chỉ và có thể trỏ đi được chỗ khác, còn nó bất di bất dịch vì đơn giản nó chính là cái biến nó tham chiếu đến, có vẻ 1 tham chiếu nó sẽ giống với Type *const pointer;
+
+=================================================================================
+
+Con trỏ thường: POINTER
+
+void* thì sẽ trỏ tới mọi vùng nhớ kiểu khác được, lúc đó ta chỉ cần ép kiểu thôi
+
+pointer=p
+- phân biệt type* p, const type* p, type* const p, const type* const p
+- ex        int*   , const int*   , int* const   , const int* const
+Note: const type = type const
+
+- khi 1 con trỏ trỏ đến 1 vùng nhớ thì nó sẽ nắm giữ 2 thứ của vùng nhớ đó
+hoặc kể cả con trỏ trỏ đến 1 con trỏ khác thì cũng thế -> có nghĩa là nó sẽ nắm giữ được 2 thứ của cái nó trỏ đến 
+
+ ***                                                       ***
+***  con trỏ nó nắm giữ 2 thứ, 1 là địa chỉ, 2 là giá trị !  ***
+ ***                                                       ***
+
+=> cái việc khai báo con trỏ như thế nào sẽ quyết định việc có thể thao tác 2 thứ trên như thế nào
+
+- type* p thì p là 1 con trỏ trỏ đến 1 vùng nhớ kiểu type, có thể trỏ sang 1 vùng nhớ khác, nắm giữ địa chỉ của vùng nhớ đó. có thể thay đổi giá trị của vùng nhớ đó thông qua con trỏ
+- const type* p thì p là con trỏ trỏ đến vùng nhớ kiểu const type, or kiểu type cũng được, cũng có thể trỏ sang vùng nhớ khác, nhưng không thể thay đổi giá trị vùng nhớ đó thông qua con trỏ
+- type* const p thì p là 1 hằng con trỏ, không trỏ đi chỗ khác được, mean trỏ đến 1 vùng nhớ duy nhất kiểu type, có thể thay đôi giá trị thông qua con trỏ
+- const type* const p thì p là 1 con trỏ hằng trỏ đến 1 hằng giá trị, vẫn có thể trỏ đến 1 giá trị không hằng nhưng ý nghĩa ở đây là nó không thể trỏ đi chỗ khác cũng k thể thay đổi giá trị nó trỏ đến thông qua nó
+
+chốt lại:
+- type*: thoải mái
+- const type*: không thay đổi được giá trị thông qua con trỏ == type const*
+- type* const: không trỏ đi chỗ khác được
+
+=> NHẬN RA: * sẽ là cái nhận biết const sẽ aplly cho cái nào, trước * thì apply cho kiểu trỏ đến (hằng hay ko), sau * thì apply cho con trỏ(con trỏ hằng hay là ko)
+
+=================================================================================
+
+FUNCTION POINTR
+
+Con trỏ hàm: là con trỏ trỏ tới 1 hàm, k có cấp phát vùng nhớ gì cả, giữ địa chỉ tại đoạn mã bắt đầu chạy hàm, khi khai báo cần xác định kiểu return của hàm, tham số truyền, tên con trỏ phải đặt trong ()
+- khi truyền địa chỉ hàm cho con trỏ hàm không cần &, vì đơn giản, bản thân hàm cũng kiểu như là 1 địa chỉ, 1 con trỏ hàm mẹ rồi. viết mỗi tên thôi nhé
+- parameter default của hàm không thể dùng cho con trỏ hàm, vì parameter default của hàm được compiler xác nhận tại thời điểm compile, còn function pointer thì tại thời điểm chạy, nên vẫn phải truyền đủ parameter
+
+ví dụ: 
+int function(int x, int y){return ...}
+int (*FPointer)(int,int) -> con trỏ hàm có thể trỏ tới mọi hàm có kiểu return là int và 2 tham số là int
+FPointer = function; // right, not function() or not *FPointer , gán địa chỉ hàm tới con trỏ
+(*FPointer)(9,3); -> gọi hàm
+
+Định nghĩa 1 kiểu con trỏ hàm để dùng 
+typedef int (*FPointer)(int,int) -> FPointer là kiểu con trỏ hàm có return là int và 2 tham số là int
+FPointer x = function; -> gán địa chỉ
+(*x)(9,3);
+
+- con trỏ hàm cũng có thể dùng làm tham số, nhiều TH nó là callback function đó, tham số là tham số, hiểu ko ta, default parameter ? ok luôn
+
+function2(int x, (int)(*FPointer)(int,int) = function){ (*y)(int,int) } -> khi gọi function2 mà k truyền hàm vào thì nó mặc định chạy hàm fucntion
+or
+function2(int x, FPointer y = function){ (*y)(int,int) }
+
+=================================================================================
+
+NAMESPACE
+
+source file sẽ được bộ tiền xử lý duyệt trước, sau đó mới biên dịch sorce code thuần mà k bao gồm các chỉ thị có # nữa
+
+dùng namespace để ta tách biệt đoạn code đó trong 1 scope mà k lo bị trùng lặp tên các biến các hàm ở 1 nơi khác,
+khi mà 2 namespace có cùng tên thì thực chất chúng là 1,thì khi đó ko được trùng tên tên các biến các hàm, khi mà truy xuất các thằng trong 
+namespace ta dùng toán tử ::, namespace khác class, bản thân nó chỉ là 1 nơi để gom lại trong 1 scope, để phân biệt, còn class là 1 data type
+
+=================================================================================
+
+FUNCTION
+
+- inline function là hàm nội tuyến, khi mình đặt từ khóa inline trước hàm thì nó yêu cầu complier thực hiện, nội tuyến nghĩa là nó sẽ coi như ta viết trực tiếp nó vào mã mà ko phải là gọi hàm,  còn constexpr function thì nó là yêu cầu trinh biên dịch biên dịch cái hàm đó tại thời gian biên dịch, thì lúc chạy chương trình nó sẽ nhanh hơn
+
+- tham số mặc định của hàm phải đứng sau các tham số k mặc định
+
+- hàm thì ta sẽ có kiểu trả về, tên hàm, các tham số truyền đến hàm và thân hàm, thì tham số truyền vào hay kiểu return về có thể là tham trị, tham chiếu hay con trỏ
+
+return void
+
+return giá trị thì nó sẽ create ra đối tượng tạm thời để lưu cái giá trị đó rồi sau đó sẽ destroy cái đối tượng đó luôn, mà bh complier nó gán luôn chứ có thể là không cần tạo đối tượng tạm
+
+return con trỏ hoặc return tham chiếu cần chú ý cái đối tượng mình chọc vào, là biến cục bộ thì oẳng chó
+
+chú ý khi return về kiểu tham chiếu thì đừng nhìn thấy symbol & mà nói là địa chỉ nhé, ví dụ tham chiếu của 1 biến int khác hoàn toàn với địa chỉ của 1 biến x
+
+int& x = y; nó khác hoàn toàn với int* x = &y;
+x này vẫn là kiểu int             x này là kiểu int* mẹ rồi   
+
+=================================================================================
+
+STATIC DISPATH, DYNAMIC DISPATH trong c++
+
+(link xịn: https://cppdeveloper.com/c-nang-cao/virtual-tables-vtable-trong-c/)
+
+- trước hết thì hãy hiểu static dispath là gì: trong case này có thể hiểu static dispath là việc tìm đúng địa chỉ của hàm cần gọi, trong case bình thường, khi không dùng virtual method, thì khi chúng ta định nghĩa 1 hàm trong class thì lúc biên dịch thằng compiler nó sẽ lưu địa chỉ hàm và dùng để jump đến cái địa chỉ này để chạy hàm mỗi khi hàm được gọi, là địa chỉ của dòng lệnh đầu tiên trong hàm thì phải (nhân tiện đây cũng là lý do mình có thể dùng con trỏ hàm)
+
+- lưu ý là mỗi hàm trong class sẽ có 1 địa chỉ tương ứng và là DUY NHẤT tồn tại và được sử dụng chung cho tất cả các đối tượng trong class đó 
+
+OK, dễ hiểu vlìn ?, bây giờ nói về vtable, vpointer and dynamic dispatch
+
+- á đù, trước tiên là lòi ra cái dynamic dispath: thì như nào ? là define ra 1 cái hàm, và nó có địa chỉ, thì lúc biên dịch, compiler xác định được luôn cái địa chỉ đó của hàm thì quá trình đó gọi là static dispath. Ngược lại, nếu nó không thể xác định trước được địa chỉ của hàm tại lúc biên dịch, mà phải xác định tại runtime, thì đó là dynamic dispath, trường hợp này sảy ra đối với hàm ảo - virtual method, ví dụ nhá:
+
+class A{
+public:
+virtual method1();
+virtual method2();
+}
+class B : public A{
+public:
+method1();
+}
+
+-> đã áp ụng đa hình rồi đúng không ! thì:
+A* = new B();
+A->method1();
+
+-> nếu compiler nó áp dụng static dispath vào đây, nghĩa là nó xác định địa chỉ của hàm A::method1 luôn từ lúc biên dịch, thì chỗ này hàm A::method1 phải được chạy, nhưng rõ ràng ở đây là đã chạy hàm B::method1 -> chương trình đã phải tìm địa chỉ của hàm cần chạy ở runtime, và do đó, quá trình này được gọi là dynamic dispath
+
+- bây giờ là đến thằng vtable hay đầy đủ là virtual table: có thể coi thằng vtable này là mảng con trỏ hàm nhỉ , là nó đó ???
+
+khi biên dịch code, với mỗi class mà có chứa virtual method thì nó sẽ tạo ra 1 cái gọi là virtual table, tỉ như ex trên thì nó sẽ tạo ra 2 vtable cho 2 class là A và B, vì class B public lại class A và define lại cái hàm  method1 nên dù mình k có từ khóa virtual ở đó thì nó vẫn là virtual method bình thường thôi.
+
+- thì cái vtable nó sẽ lưu địa chỉ của các hàm virtual mà có thể được gọi thông qua đối tượng của class đó, các phần tử của vtable có thể trỏ đến địa chỉ của hàm virtual mà được định nghĩa bởi chính class đó, hoặc trỏ đến hàm virtual của class cha nếu bản thân nó k override lại
+
+theo ex bên trên, nó sẽ tạo ra 2 vtable riêng cho class A và class B
+
+vtable cho class A chứa 2 con trỏ hàm 1 trỏ đến A:method1 và 1 trỏ đến A::method2
+
+vtable được tạo ra ở class con là B cũng có 2 con trỏ hàm 1 trỏ đến B::method1 và 1 trỏ đến A::method2
+
+- CHÚ Ý là chỉ có 1 vtable DUY NHẤT cho mỗi class và được share dùng chung cho tất cả object được tạo ra của class đó
+
+- tiếp tục là đến thằng Vpointer: là 1 biến thành viên của class thôi, ơ mà được tạo ngầm đấy, không nhìn thấy đâu :))
+
+là như sau: khi biên dịch chương trình, thì class có virtual method thì compiler nó tạo ra 1 vtable cho class đó, đồng thời là nó cũng tạo thêm 1 biến thành viên cho class là vpointer, đồng nghĩa với việc mỗi object được tạo ra sẽ có 1 biến vpoiner như bao biến khác, làm tăng size của object thêm sizeof(vpointer) bytes
+
+và đây là cách mà dynamic static hoạt động: trong runtime, 1 lời gọi đến 1 hàm ảo trên 1 đối tượng thì vpointer của đối tượng đó sẽ được sử dụng để tìm vtable tương ứng của class
+
+- Vậy, đã có vài lần build mà bị bệnh là undefined reference to `vtable for MethodXXX
+
+có nghĩa là sao nhỉ ? 1 là thằng vpointer hỏng 2 là thằng phần tử bên trong vtable trỏ đến hàm MethodXXX hỏng
+
+thế lỗi "undefined reference to `vtable for MethodXXX" thì cuối cùng là lỗi do vpointer không trỏ được đến vtable hay do thằng phần tử của vtable k trỏ được đến hàm hay trình biên dịch fail hay như thế nào nhỉ :))
+
+=================================================================================
+
+CLASS 
+
+- class như 1 cái bộ khung thôi, khi tạo xong 1 cái class thì cũng k có vùng nhớ hay gì cấp phát đi đâu cả, nó là 1 cái bộ khung chung để xây dựng nên các object thôi, giống kiểu bản vẽ nhà 3d với việc xây dựng lên ngồi nhà ấy thật sự vậy !
+
+- ban đầu chắc nên nói về nạp chồng và đa hình luôn đi;
+thì khi mà 1 class kế thừa 1 class khác thì nó có thể sử dụng lại được data hoặc function trong protected or public, ngược lại thì không (mean đối tượng thuộc class cha thì không sử dụng được tài nguyên ở class con)
+
+- 1 con trỏ lớp cha luôn có thể trỏ  đến 1 đối tượng lớp con, cái việc dùng con trỏ là muốn thao tác với giá trị, hay là cái vùng nhớ, hay là cái dữ liệu mà con trỏ nó trỏ vào, nhưng ở đây nếu k dùng đa hình:
+
+- VIRTUAL METHOD
+class A;
+class B : public A
+
+A* x = new B;
+
+- thì x sẽ không thao tác được các tài nguyên trong B mà chỉ thao tác được trong bản thân nó là A, means nó ưu tiên kiểu dữ liệu con trỏ chứ k ưu tiên kiểu dữ liệu của đối tượng được trỏ
+
+- nạp chồng hàm + virtual -> đa hình: mà khi dùng đa hình rồi nó sẽ giải quyết được vấn đề bên trên
+- class con chỉ có thể định nghĩa lại cái hàm đã khai báo ở class cha chứ không thể nạp chồng hàm của class cha tại class con, (giống return, giống tên hàm, giống tham số)
+
+- việc dùng đa hình giải quyết được cái vấn đề là 1 con trỏ hoặc tham chiếu kiểu base trỏ vào 1 kiểu con !
+
+- member initializer lists: là khởi tại danh sách thành viên, có 1 vài điểm khác nhau !
+
+Đã biết là khai báo với khởi tạo là khác đúng không, thì việc mà mình khai báo, xong gán giá trị ban đầu ở constructor nó khác với khởi tạo giá trị ban đầu (nhìn biến const là rõ liền), tỷ như:
+
+class A{
+int x; // khai báo x, giá trị rác
+A(){
+int = 0; // gán giá trị
+}
+}
+
+khởi tạo hiểu đúng chắc nên là:
+
+class A{
+int x = 9; // khởi tạo x = 9
+A(){}
+}
+
+tương đương với:
+
+class A{
+int x;
+A() : x{9}
+{}
+}
+-> cũng là khởi tạo x = 9 y như bên trên
+
+ví dụ class có 1 member là const int chẳng hản, thì phải khởi tạo giá trị ngay chứ k thể khai báo rồi để đấy, nếu k dùng initializer lists thì all object của class đều có 1 biến const int đó với giá trị giống nhau, chẳng thà đặt static mẹ đi, cơ mà mình muốn mỗi object có 1 const int đó với giá trị khác nhau, lúc này cần dùng initializer lists rồi
+
+class A{
+public:
+A(int x) : mx{x}
+{}
+
+private:
+const int mx;
+}
+
+rõ ràng mỗi 1 lần create ra 1 object of A thì sẽ sử dụng được 1 giá trị mx khác nhau, lưu ý chỗ này là tạo ra rồi thì không có thay đổi được nữa đâu
+
+- CONSTRUCTOR của class thì như nào !
+
+-> quyết định xem liệu object có được tạo hay không, k có contructor nào phù hợp thì k tạo được object
+
+vài loại như sau: constructor mặc định (có define hoặc ẩn), constructor có tham số, copy constructor (có define hoặc ẩn) và move constructor, cũng có thể nạp chồng constructor bình thường vì đơn giản khi đó là có nhiều cách để tạo ra object !
+
+nói về copy constructor đi: sẽ được sử dụng khi ta gán 1 object cho 1 object, ví dụ
+class A{
+public:
+int x;
+int* p;
+}
+
+A x; // gọi constructor default để create x
+A y = x; // gọi copy constructor default
+hiện tại thì thấy k sao đúng ko, vì build và run bình thường, nhưng khổ 1 chỗ, default copy contructors hiểu nôm na nó sẽ nhân bản thằng y từ thằng x, vậy nó sẽ nhân bản ra 2 con trỏ int* p khác nhau đúng ko, nhưng khổ 1 cái, vùng nhớ mà nó trỏ vào thì k có tự nhân bản ra được
+nó vẫn là 2 con trỏ khác nhau đấy nhưng bây giờ dùng chung 1 vùng nhớ,nên sau đó sẽ phải tách ra bằng cách cho 1 trong 2 nó trỏ đi chỗ khác là xong, hoặc làm điều đó ngay khi khởi tạo đối tượng bằng copy constructor -> ĐÚNG
+
+-> giải quyết nó bằng cách sử dụng copy constructor mình define ra: A(const A& x){x.ptr = new int();} -> ok, sẽ không bị dùng chung 1 vùng nhớ nữa
+A y = x; lúc này sẽ create đối tượng bằng cách gọi A(const A& x) <=> y.A(x) [khởi tạo y từ x]
+
+NOTE: nếu không define copy contructor, biến k phải con trỏ sẽ bình thường(được gán giá trị luôn), biến con trỏ sẽ bị chung chạ như giải thích ở trên,
+còn 1 khi đã define copy contructor, muốn làm gì thì phải làm trong hàm, nếu ko biến sẽ k tự động gán, con trỏ sẽ trỏ vào 1 nơi k xác định 
+- nếu đã define move contructor thì bắt buộc phải define copy contructor
+
+- có thể sử dụng constructors của lớp base bằng cách gọi nó ở vị trí member initializer lists, nên dùng khi nào, khi cần khởi tạo các biến được delecare trong class B, trách việc phải khởi tạo lại ở class con thôi !
+class A{
+public:
+A(){}
+A(int x){this->x = x;}
+
+int x;
+}
+
+class B : public A{
+public:
+B(int x, int y) : this->y{y}, A(x){} -> dùng constructor của A để khởi tạo x
+
+int y;
+}sss
+
+CHÚ Ý: con trỏ this là con trỏ ẩn trỏ vào đối tượng hiện tại, vậy nên trong các hàm thành viên có thể sử dụng con trỏ this
+A a(0); sẽ hiểu như sau: a.A(0){a.this->x =0;}
+
+- thành viên static sẽ không có con trỏ this, vì thành viên static thuộc về class, k thuộc về bất kì đối tượng nào !
+
+- hàm bạn - function friend, class bạn - class friend, hàm thành viên là bạn
+
+- Move constructor : đoạn này hơi ảo ảo ! 
+CHÚ Ý: 1 cái vùng nhớ sẽ có 1 cái biến, hay là 1 cái expression đại diện cho vùng nhớ đó để chương trình có thể quản lý được cái vùng nhớ đó, tỷ như :
+int global;
+int main(){int n; return 0;}
+
+thì ở đây có 2 cái biến (hoặc gọi là 2 cái expression) là global và n, mỗi cái đều dại điện cho 1 vùng nhớ kiểu int 4bytes, nhờ vào nó, chương trình sẽ biết được vòng đời tồn tại của vùng nhớ đó tương ứng với vòng đời tồn tại của biến !
+
+vậy cái std::move là move vùng nhớ tới 1 cái name mới, giống kiểu ngôi nhà thay tên chủ hộ trên sổ đỏ vậy ! -> chủ cũ vô gia cư nhưng k bị bất hợp pháp(miễn là k undefine)
+
+ví dụ đang có 1 class như thế này:
+class A{
+public:
+
+    A(int x =0, int* p=nullptr) : mx{x}, ptr{p}{
+        LOG<< "constructors: " << this;
+    }
+    A(const A& x){
+        LOG << "copy constructors " << this << " " << &x;
+    }
+    A(const A&& x) noexcept {
+        LOG << "move constructors " << this << " " << &x;
+    }
+
+    A& operator+(const A& x){
+        LOG << "operator+ " << &x << " " << this;
+        return *this;
+    }
+    A operator++(){
+        LOG << "operator++";
+        return *this;
+    }
+    void printed(){
+        LOG << this;
+    }
+    ~A(){
+        LOG << "destroyed " << this;
+    }
+
+public:
+    const int mx = 0;
+    int* ptr;
+};
+//A global;
+A returnA(){
+    A n;
+    return A() hoặc return n đều như nhau
+-> bởi vì return A() hay n đều là return về 1 giá trị của 1 object kiểu A, khi này chương trình sẽ tạo ra 1 cái định danh, hay gọi là 1 name tạm nào đấy quản lý cái vùng nhớ tạm chứa cái giá trị được return về !
+-> và đây là return về 1 rvalue 
+}
+
+int main (){
+    LOG << "main start !";
+    A n = returnA();
+    while(true){};
+    return 0;
+}
+
+ta sẽ thấy lúc này chương trình nó đã sử dụng 1 cơ chế như là std::move vây ý, in log sẽ thấy, nếu ở main chỉ viết là return A()
+, thì rõ ràng nó đã contructors ở function returnA và kết thúc hàm nó destroy cái đối tượng đó(mean destroy cái vùng nhớ đó), nhưng nếu viết như bên trên, A n = returnA(); -> vẫn sẽ là contructor 1 cái object từ function returnA này, nhưng sau đó k hề có copy contructor hay là move contructor để cretae ra object n nữa, ta cũng k hề thấy có object nào bị destroy đi, thế có nghĩa là, nó đã move cái vùng nhớ của object tạm được cretae ra ở function r trực tiếp sang cho thằng object n, và vòng đời của nó sẽ gán với n, nên ta sẽ k thấy có object nào bị destroy ở đây cả
+
+-> TÓM LẠI: thấy, sau 1 hồi check, mình thấy move constructor hay copy contructor khác nhau mỗi chỗ là nó sẽ tiết kiệm quá trình gán giá trị, thay vì copy từ chỗ này sang chỗ khác, thì nó trỏ luôn tới đó ! ,refer lại cái cơ chế bên trên
+
+- tưởng tượng như có 2 con trỏ, con trỏ 1 trỏ tới 1 mảng chưa có gì, con trỏ 2 trỏ tới 1 mảng nhiều phần từ, h nếu copy thì có nghĩa là copy từng phần tử từ mảng 2 -> 1, mất thời gian, move thì nó sẽ move luôn vùng nhớ của con trỏ 1 tới chỗ con trỏ 2, thành ra vẫn là 2 con trỏ trỏ cùng 1 vùng nhớ
+-> sẽ dùng copy contructor nếu y =x mà gán xong rồi nhưng lại vẫn muốn dùng thằng x;
+
+sẽ dùng move contructor nếu y = x và gán xong rồi k cần thằng x nữa, phải có step là gán x về null nếu trong x có con trỏ, nếu k sẽ bị 2 con trỏ trỏ cùng tới 1 svùng nhớ đó -> nói rồi, chỉ khác nhau ở hiệu suất chạy thôi
+
+
+
+- Operator Overloading in C++
+
+ví dụ: sử dụng class A bên tr
+
+int main (){
+
+    A x(9), y(3);
+    A z = x+y; // x.operator+(y), sau đó lại gọi copy contructors z.A(1 cái object tạm), nếu mà operator+ trả về là A& thì chính là z.A(x) ở đây x là kết quả sau khi thực hiện x+y
+ 
+    return 0;
+}
+
+- NHÂN TIỆN: THIS POINTER
+các hàm operator overload mà không có return cái gì để nó auto return giá trị rác về là oẳng !
+A* <-> return this - trỏ 
+A& <- return *this -> tham chiếu luôn
+A <-> return *this -> giá trị thôi
+
+ví dụ: ...
+class A{
+    public:
+    int ma = 0;
+    A* const foo1 (){
+        ma = 1;
+        return this;
+    }
+    A& foo2 (){
+        ma = 2;
+        return *this;
+    }
+    A* const foo3 (){
+        ma = 3;
+        return this;
+    }
+    void printed(){
+        LOG << ma;
+    }
+};
+
+A n;
+n.foo1()->foo2().foo3()->printed(); // =3
+
+- CONST OBJECT: Đối tượng hằng: ví dụ
+class A{
+private:
+    int ma;
+public:
+    A(const int& a): ma{a} {}
+    void getValue(){
+        LOG << "function normal " << ma;
+
+    }
+    void getValue() const {
+        LOG << "function const " << ma ;
+    }
+};
+
+int main (){
+    A a(9);
+    a.getValue();
+
+    const A b(3);
+    b.getValue();
+    while(true){}
+
+    return 0;
+}
+
+- đối tượng const không thể gọi 1 hàm non-const dù hàm đó ko thay đổi giá trị của đối tượng
+- đối tượng non-const có thể gọi cả hàm const và non-const
+- hàm const thì ko thể thay đổi gía trị của object 
+
+=================================================================================
+
+STL Libsrary, std::function
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
