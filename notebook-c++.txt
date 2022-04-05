@@ -12,7 +12,7 @@ Mục lục:
  - member initializer list
  - Operator Overloading in C++
  - CONST OBJECT
-9. STL Library
+9. STL Library FUNCTOR
 
 =================================================================================
 

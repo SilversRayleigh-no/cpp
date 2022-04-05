@@ -1,0 +1,129 @@
+Permissions linux như sau:
+read : được phép đọc nội dung của file - 4 
+write: được phép ghi vào file -2
+execute: được phép thực thi file như 1 program/script - 1
+
+-> để có sự kết hợp cho các quyền, cộng vào thôi, ví dụ quyền đọc ghi thì là 4+2 = 6, đọc ghi thực thi là 4+2+1 = 7
+
+thay đổi quyền bằng chmod command
+- First number is for user
+- Second number is for group
+- Third number is for others
+
+VÍ DỤ: 0666 nghĩa là user, group and others đều có quyền đọc và ghi nội dung
+
+share memory system v ipc
+
+CODE EXAMPLE:
+// CREATE SHARE MEM
+#include "logger.h"
+#include <sys/types.h>
+#include <sys/ipc.h> //key_t and ftok
+#include <sys/shm.h> // shmctl, shmget, shmat, shmdt
+
+/*
+typedef __key_t key_t;
+# define __key_t_defined
+
+ Generates key for System V style IPC.
+extern key_t ftok (const char *__pathname, int __proj_id) __THROW;
+
+
+
+ Shared memory control operation.
+extern int shmctl (int __shmid, int __cmd, struct shmid_ds *__buf) __THROW;
+
+ Get shared memory segment.
+extern int shmget (key_t __key, size_t __size, int __shmflg) __THROW;
+
+ Attach shared memory segment.
+extern void *shmat (int __shmid, const void *__shmaddr, int __shmflg)
+     __THROW;
+
+ Detach shared memory segment.
+extern int shmdt (const void *__shmaddr) __THROW;
+*/
+
+#define GENERATE_KEY 'K'
+#define PATH_KEY "/home/gen5/LEARN-FOR-FAST-TRACK/shared-memory-ipc/generate-key"
+#define PATH_KEY_1 "/home/gen5/LEARN-FOR-FAST-TRACK/shared-memory-ipc/generate-key-1"
+int main(int argc, char *argv[])
+{
+    LOG << "main start create share mem !";
+
+    /*⇒ các process khác nhau chỉ cần cung cấp path và id giống
+    nhau là có thể tạo đúng key truy cập đến cùng một IPC object.*/
+    key_t key = ftok(PATH_KEY, GENERATE_KEY);
+    if(key == -1){
+        LOG << "path is not exist";
+    }
+    else{
+        LOG << "key is: " << key;
+    }
+
+    int shmid;
+    shmid = shmget(key, sizeof(int), 0666|IPC_CREAT|IPC_EXCL); // tạo ra 1 phân đoạn bộ nhớ dùng chung có size,có permission, trả về 1 mã định danh cho phân đoạn bộ nhớ này được liên kết với khóa là key (type là key_t)
+    
+    IPC_CREAT - với ý nghĩa là create vùng phân đoạn share mem này liên kết khóa với key_t key, kết hợp với IPC_EXCL để nó check nếu phân đoạn này tạo rồi thì nó sẽ k tạo nữa return -1
+    từ lần gọi sau thì k cần dùng parameter thứ 2,3 nữa
+
+    /*
+    #define IPC_CREAT	01000		Create key if key does not exist.
+    #define IPC_EXCL	02000		Fail if key exists.
+    #define IPC_NOWAIT	04000		Return error on wait.
+    */
+
+    LOG << "shmid is: " << " " << shmid;
+
+    char* ptr_share = (char*)shmat(shmid, nullptr, 0); // trả về 1 con trỏ chọc vaò cái vùng nhớ có cái mã định danh là shmid
+    /* để hiểu đơn giản thì int a = 3; a chính là tên định danh cho cái vùng nhớ 4kb có giá trị là 3 đó */
+
+    char str[100] = "le ngoc hai";
+    strcpy(ptr_share, str);
+
+    LOG << ptr_share << " - " << "main end create share mem !";
+    shmdt(ptr_share); // detach share mem ra khỏi process này
+    // LOG << ptr_share << " - " << "main end create share mem !"; // cố gắng truy cập sau khi detach sẽ gây crash  - undefine behavior
+    return 0;
+}
+
+sau đó progress này bị detach ra khỏi share mem cũng k ảnh hưởng đến phân đoạn đó, vì nó đã là 1 vùng nhớ và có 1 mã định danh rõ ràng !
+
+khi ở progress khác, ta có thể dùng path và key trong ftok để tạo lại key_t, cùng path cùng key thì sẽ tạo lại được key_t giống nhau mà thôi, rồi dùng key_t tạo lại vùng share mem có mã định danh được trả về qua hàm shmget
+
+-> dù sao mục đích cuối cùng là lấy ra được cái mã định danh cho cái vùng nhớ đó là có thể sử dụng shmat để lấy ra con trỏ chọc vào vùng nhớ đó
+
+// USE SHARE MEM
+#include "logger.h"
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <fcntl.h>
+int main(int argc, char *argv[])
+{
+    LOG << "main start use share mem !";
+
+    int shmid;
+    shmid = shmget(1258393122, sizeof(int), 0666); // 1258393122 là key_t được gene ra từ thằng create share mem
+    -> đây là lần sử dụng shmget chỉ với mục đích get ra được cái định danh của cái vùng nhớ đã tồn tại rồi, vậy nên k cần truyền cái parameter thứ 2 là size của vùng nhớ nữa, và nên dùng thằng này để lấy lại cái tên định danh, vì khóa key_t key khi tạo ra rồi sẽ không đổi nhưng tên định danh sẽ có thể bị thay đổi sau mỗi lần start
+ 
+    char* ptr_share = (char*)shmat(15433748, nullptr, 0); // 15433748 là mã định danh shmid được gene ra từ thằng create share mem
+
+
+    LOG << ptr_share << "main end use share mem !";
+
+    char str[100] = "tran bao ngoc";
+    strcpy(ptr_share, str);
+    LOG << ptr_share << "main end use share mem !";
+    (*) shmctl(ptr_share, IPC_RMID, nullptr); // IPC_RMID - remove định danh của vùng nhớ, xóa hẳn vùng nhớ này luôn
+    return 0;
+}
+
+chạy xong thằng create share mem thì nó tạo ra vùng share mem này, k tạo lại được vì dùng IPC_EXCL(sẽ nị bỏ qua nếu k chỉ định IPC_CREAT), lần đầu gọi shmget() nên dùng 2 thằng này, nghĩa là tạo cùng nhớ, xong rồi thì nó trả về định danh cho vùng nhớ đó dựa theo key, nếu lần 2 vẫn gọi như vậy nó check key nó thấy định danh này tồn tại với 1 vùng nhớ rồi thì nó fail, return -1
+
+sau đó chạy process use share mem, ví dụ không gọi thằng này(*), thì nó sẽ in ra le ngoc hai rồi sau đó gán lại thành tran bao ngoc, rồi những lần sau chỉ là tran bao ngoc thôi, sử dụng (*) thì nó remove rồi, cố tình sử dụng lại vùng nhớ này sẽ undefine behavior -> crash
+
+
+
+
+
