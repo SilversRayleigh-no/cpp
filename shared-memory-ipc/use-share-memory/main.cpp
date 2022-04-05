@@ -6,7 +6,7 @@
 #include <iostream>
 
 #define GENERATE_KEY 'K'
-#define PATH_KEY "/home/gen5/LEARN-FOR-FAST-TRACK/shared-memory-ipc/generate-key"
+#define PATH_KEY "/home/chaelisa/for-fast-track/github/for-fast-track/shared-memory-ipc/generate-key"
 
 typedef struct DYDX{
     int priceCurrent = 0;

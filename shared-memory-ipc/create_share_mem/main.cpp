@@ -27,8 +27,8 @@ extern int shmdt (const void *__shmaddr) __THROW;
 */
 
 #define GENERATE_KEY 'K'
-#define PATH_KEY "/home/gen5/LEARN-FOR-FAST-TRACK/shared-memory-ipc/generate-key"
-#define PATH_KEY_1 "/home/gen5/LEARN-FOR-FAST-TRACK/shared-memory-ipc/generate-key-1"
+#define PATH_KEY "/home/chaelisa/for-fast-track/github/for-fast-track/shared-memory-ipc/generate-key"
+#define PATH_KEY_1 "/home/chaelisa/for-fast-track/github/for-fast-track/shared-memory-ipc/generate-key-1"
 
 
 struct DYDX{
@@ -38,6 +38,8 @@ struct DYDX{
 
 int main(int argc, char *argv[])
 {
+//    shmctl(98362, IPC_RMID, 0);
+//    return 0;
     LOG << "main start create share mem !";
     LOG << "size of DYDX: " << sizeof(DYDX);
 
@@ -88,11 +90,12 @@ int main(int argc, char *argv[])
 
 
 //    *(ptr_share->priceFuture) = 3;
-//    LOG << ptr_share->priceCurrent << " " << *(ptr_share->priceFuture);
+    LOG << ptr_share->priceCurrent;// << " " << *(ptr_share->priceFuture);
 
 //    shmdt(ptr_share->priceFuture);
 
     shmdt(ptr_share); // detach ra khỏi cái process này
+    shmctl(shmid, IPC_RMID, 0);
     // LOG << ptr_share << " - " << "main end create share mem !";
     return 0;
 }
