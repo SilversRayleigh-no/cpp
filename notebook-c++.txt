@@ -455,6 +455,139 @@ int main (){
 
 STL Libsrary, std::function
 
+FUNCTOR - function object là việc mình đi overload toán tử ()
+
+template <typename T>
+struct Chaelisa{
+    T ma;
+    void operator()(T x){
+        QDEBUG << x*x << " ";
+    }
+};
+
+int main(){
+
+    Chaelisa<int> chli;
+    chli.ma = 9;
+    QDEBUG << chli.ma;
+    chli(9); // chính là functor <-> chli.operator()(9) -> không phải là function
+
+    return 0;
+}
+
+STL- https://www.geeksforgeeks.org/the-c-standard-template-library-stl/
+
+1. generic programming with marcos
+
+ví dụ nếu muốn viết so sanh 2 tham số với các kiểu tham số khác nhau như int, double... sẽ cần nhiều hàm khác nhau:
+
+int max(int a, int b){
+return a>b?a:b;
+}
+double max(double a, double b){
+return a>b?a:b;
+}
+
+nhưng nếu dùng marco sẽ như sau:
+
+#define MAX(a,b) (a>b?a:b) -> nó sẽ tự động nhận diện type của a, b -> processor
+should 
+
+khi gọi marco, sẽ sẽ gọi đúng những gì mình define, nên đừng tiếc dấu ngoặc đơn
+
+2. generic programming with function templates
+
+max function như trên có thể được viết bằng template function
+
+template<typename T> // -> nói cho compiler biết đây là 1 template function và T là 1 template parameter
+T max(T a, T b){
+return a>b?a:b;
+}
+
+-> complier complier it ok, nhưng mà nó không gen ra bất kì code nào cả, nó chỉ đơn giản là 1 template, nó sẽ không gen ra code cho đến khi nào users chỉ định 1 version cụ thể cho template đó
+
+- có thể sử dụng class thay cho typename -> template<class T>
+
+int a,b;
+first use: max<int>(a,b);
+second use: just can max(a,b) cho dù type k phải là int nữa, nó vẫn sẽ ngầm hiểu
+double c, d;
+then just call max(c,d)
+
+- CHÚ Ý: toán tử dùng trong hàm template phải được support bở typename T
+- có thể sừ dụng nhiều typename
+template <typename T1, typename T2>
+void func(T1 a, T2 b){
+std::cout << a << b;
+}
+
+3. generic programming with class templates
+same above !
+
+4. creating a generic array template class
+
+template<typename T, int N>
+class A{
+T size {N};
+T array[N];
+}
+
+A<int, 10> a; -> template N, nó sẽ nhận giá trị n = 10, T là kiểu int
+
+5. introduction to STL containers
+
+- khi lưu trữ 1 object trong containers, nó sẽ make ra 1 bản sao của objetc chứ k đặt luôn cái object của mình vào trong container đâu (với all type luôn)
+
+- các function hay dùng: 
+size: return số lượng phần tử của container 
+empty: return true or false nếu container empty or not
+insert: chèn 1 phần tử tới container -> make a copy object của mình rồi chèn vào container
+operator<, operator<=, operator>, operator>= : so sánh contents của 2 containers
+operator==, operator!=: so sánh contents của 2 containers bằng nhau hay ko
+
+swap: swap 2 phần tử của container
+erase: xóa element(s) của containers
+clear: xóa all element
+begin and and: trả về trình lặp trỏ đến phần tử đầu hoặc cuối
+rbegin and rend: trả về trình lặp ngược trỏ đến phần tử cuối hoặc đầu tiên
+cbegin, cend: trình lặp hằng trỏ đến .....
+crbegin, vrend: ..............
+
+- CHÚ Ý: toán tử phải được hỗ trợ bởi object 
+
+6. introduction to STL  Iterators
+
+- nó như con trỏ để mà dùng ở trong container thôi
+std::vector<int>::iterator it1; -> chỉ dùng trong vector int
+std::list<std::string>::iterator it2; -> chỉ dùng trong list có phần tử là std::string
+std::map<std::string, std::string>::iterator it3; -> chỉ dùng trong map có phần tử là std::string pair với st::string
+
+ví dụ: std::vector<int> vec {1,2,3}; vec.begin là thằng 1, nhưng vec.end là thằng sau thằng 3 chứ k phải thằng 3
+
+7. introduction to SLT algorithms
+
+find(begin, end, element) // need to provide operator==
+for_each()
+
+8. std::array
+9. std::vector
+10. std::deque, std::queue, std::priority_queue
+11. std::list
+12. std::map
+13. std::stack
+
+-> https://en.cppreference.com/w/
+
+File and Stream: https://www.geeksforgeeks.org/file-handling-c-classes/
+
+
+
+
+
+
+
+
+
 
 
 
