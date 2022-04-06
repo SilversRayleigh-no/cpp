@@ -453,7 +453,7 @@ int main (){
 
 =================================================================================
 
-STL Libsrary, std::function
+9. STL Libsrary, std::function
 
 FUNCTOR - function object là việc mình đi overload toán tử ()
 
