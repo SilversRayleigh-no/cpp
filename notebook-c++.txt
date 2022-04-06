@@ -451,6 +451,46 @@ int main (){
 - đối tượng non-const có thể gọi cả hàm const và non-const
 - hàm const thì ko thể thay đổi gía trị của object 
 
+- khi tạo object của class con, nó sẽ luôn gọi default contructor của base
+
+#include "logger.h"
+
+class Base{
+public:
+    Base(){
+        LOG << "constructor default base";
+    }
+
+    Base(int a) : ma{a}{
+        LOG << "constructor base with one int";
+    }
+
+protected:
+    int ma;
+};
+
+class Divered: public Base{
+public:
+    Divered(){
+        LOG << "constructor default Divered";
+    }
+
+    // nếu không đưa Base{9} vào list khởi tạo, nó sẽ vẫn gọi default contructor của Base và do đó không thể khởi tạo ma cho đối tượng a của Divered
+    Divered(int b) : Base{9},mb{b}{
+        LOG << "constructor Divered with int";
+    }
+private:
+    int mb;
+};
+
+int main(){
+    Divered a(3);
+
+
+    return 0;
+}
+
+
 =================================================================================
 
 9. STL Libsrary, std::function
