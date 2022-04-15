@@ -4,3 +4,11 @@ cái bus.registerObject thì nó chỉ rõ là đăng kí path và interface cho
 nếu k đăng kí interface tại đây, thì cần phải tạo file xml, trong đó có interface ấy, rồi gen ra adaptor và đkí object đến adaptor đó là ok, khi đó mọi object đăng kí đến adaptor đều có interface đó
 
 => chưa hiểu lắm tại sao nó có thể phân biệt path nào object nào nằm trong service nào trong khi cái registerService nó không có chỉ định cụ thể, nó chỉ cộc lốc là cố gắng đăng kí thêm 1 cái service name lên D-Bus server
+
+theo Qt document,
+communicating sảy ra thông qua 1 central serve application, gọi là bus
+khi communicating trên bus, ứng dụng nó sẽ được hiểu hay là được gọi là service name, đây là cách mà ứng dụng chọn để được biết đến bởi ứng dụng khác, 
+interface nó giống như 1 lớp C++ trừu tượng, nó như 1 bản hợp đồng về signal và method giữa thằng call và thằng nhận
+
+=> trên BUS tổng là chỗ communicating, ứng dụng nó sẽ registerService lên bus tổng đó, khi đó nó sẽ được biết là servicename chứ méo phải là tên ứng dụng, vì biết thế méo nào được tên app là gì,
+object trong cái app đó sẽ được đkí path, đến đây đã tìm được object thuộc path nào trong servicename(app) nào, sau đó sẽ dựa vào interface để xem có signal hay slot (giống kiểu tìm điều khoản trong hợp đồng xem có k) thì sẽ communicating ok or not
