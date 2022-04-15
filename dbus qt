@@ -1,0 +1,6 @@
+cái bus.registerService là nó sẽ cố gắng đăng kí 1 miền service lên máy chủ D-Bus, 
+cái bus.registerObject thì nó chỉ rõ là đăng kí path và interface cho đối tượng rồi
+
+nếu k đăng kí interface tại đây, thì cần phải tại file xml, trong đó có interface ấy, rồi gen ra adaptor và đkí object đến adaptor đó là ok
+
+=> chưa hiểu lắm tại sao nó có thể phân biệt path nào object nào nằm trong service nào trong khi cái registerService nó không có chỉ định cụ thể
