@@ -11,4 +11,6 @@ khi communicating trên bus, ứng dụng nó sẽ được hiểu hay là đư�
 interface nó giống như 1 lớp C++ trừu tượng, nó như 1 bản hợp đồng về signal và method giữa thằng call và thằng nhận
 
 => trên BUS tổng là chỗ communicating, ứng dụng nó sẽ registerService lên bus tổng đó, khi đó nó sẽ được biết là servicename chứ méo phải là tên ứng dụng, vì biết thế méo nào được tên app là gì,
-object trong cái app đó sẽ được đkí path, đến đây đã tìm được object thuộc path nào trong servicename(app) nào, sau đó sẽ dựa vào interface để xem có signal hay slot (giống kiểu tìm điều khoản trong hợp đồng xem có k) thì sẽ communicating ok or not
+object trong cái app đó sẽ được đkí path, đến đây đã tìm được object thuộc path nào trong servicename(app) nào, sau đó sẽ dựa vào interface để xem có signal hay slot (giống kiểu tìm điều khoản trong hợp đồng xem có k) thì sẽ communicating ok or not,
+
+nếu connect createMethodCall tới 1 service k được register nó sẽ báo là service không được provided bởi bất kì file .service nào, vậy khả năng là khi registerService thì nó sẽ tạo ra 1 file .serive với các trường info ở đâu đo trong hệ thống
