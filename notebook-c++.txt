@@ -261,7 +261,7 @@ const int mx;
 }
 
 rõ ràng mỗi 1 lần create ra 1 object of A thì sẽ sử dụng được 1 giá trị mx khác nhau, lưu ý chỗ này là tạo ra rồi thì không có thay đổi được nữa đâu
-
+- trình tự khởi tạo các data member không phụ thuộc vào thứ tự chô mem list init, mà phụ thuộc vào lúc mình khai báo cái biến thành viên đó, từ trên xuống từ trái sang phải !
 - CONSTRUCTOR của class thì như nào !
 
 -> quyết định xem liệu object có được tạo hay không, k có contructor nào phù hợp thì k tạo được object
