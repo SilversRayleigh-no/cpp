@@ -16,7 +16,7 @@ Mục lục:
 
 =================================================================================
 
-Data type: có 2 loại, 1 là calueác kiểu dữ liệu có sẵn, 2 là kiểu do user define ra, kể cả kiểu con trỏ hàm nhé !
+Data type: có 2 loại, 1 là các kiểu dữ liệu có sẵn, 2 là kiểu do user define ra, kể cả kiểu con trỏ hàm nhé !
 
 Hiện tại mình sẽ định nghĩa nó như thế này: 1 lvalue là 1 expression(n là 1 expression mà n+n cũng là 1 expression) mà refer tới 1 object, là cái mình có thể nhìn thấy, có thể get được địa chỉ, có thể sửa được giá trị tại cái địa chỉ đó, ngược lại thì là rvalue 
 
@@ -85,6 +85,33 @@ chốt lại:
 - type* const: không trỏ đi chỗ khác được
 
 => NHẬN RA: * sẽ là cái nhận biết const sẽ aplly cho cái nào, trước * thì apply cho kiểu trỏ đến (hằng hay ko), sau * thì apply cho con trỏ(con trỏ hằng hay là ko)
+
+- 1 điểm nhỏ về share_ptr và weak_ptr
+ta có 1 ví dụ như sau:
+
+class A{
+    public:
+    A(){cout << "constructor" << endl;}
+    ~A(){cout << "destructor" << endl;}
+};
+
+std::weak_ptr<A> func(){
+    std::shared_ptr<A> SP(new A);
+    std::weak_ptr<A> WP;
+    WP = SP;
+    return WP;
+}
+
+int main()
+{
+    func(); (1)
+    std::weak_ptr<A> WP = func(); (2)
+    while(true){}
+    return 0;
+}
+
+=> dù là gọi theo cách (1) hay (2) thì ta sẽ đều thấy object bị hủy, do đó ta có thể chắc chắc khi 1 object được quản lý bởi shared_ptr, nó sẽ bị delete khi count của shared_ptr = 0, nghĩa là thằng shared_ptr cuối cùng giữ nó bị hủy, nếu có bất kì weak_ptr nào cũng trỏ vào đó thì cũng k giữ được life cho object.
+Trong TH trên, nếu sử dụng raw pointer, gọi theo cách 1 sẽ bị leak vì khi đó k còn con trỏ nào giữ object đó nữa, gọi theo cách 2 thì ta sẽ không thấy object bị hủy trước khi main kết thúc vì l
 
 =================================================================================
 
