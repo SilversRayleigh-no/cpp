@@ -134,7 +134,7 @@ FPointer x = function; -> gán địa chỉ
 
 - con trỏ hàm cũng có thể dùng làm tham số, nhiều TH nó là callback function đó, tham số là tham số, hiểu ko ta, default parameter ? ok luôn
 
-function2(int x, (int)(*FPointer)(int,int) = function){ (*y)(int,int) } -> khi gọi function2 mà k truyền hàm vào thì nó mặc định chạy hàm fucntion
+function2(int x, (int)(*FPointer)(int,int) = function){ (*FPointer)(int,int) } -> khi gọi function2 mà k truyền hàm vào thì nó mặc định chạy hàm fucntion
 or
 function2(int x, FPointer y = function){ (*y)(int,int) }
 
@@ -164,7 +164,7 @@ return giá trị thì nó sẽ create ra đối tượng tạm thời để lư
 
 return con trỏ hoặc return tham chiếu cần chú ý cái đối tượng mình chọc vào, là biến cục bộ thì oẳng chó
 
-chú ý khi return về kiểu tham chiếu thì đừng nhìn thấy symbol & mà nói là địa chỉ nhé, ví dụ tham chiếu của 1 biến int khác hoàn toàn với địa chỉ của 1 biến x
+chú ý khi return về kiểu tham chiếu thì đừng nhìn thấy symbol & mà nói là địa chỉ nhé, ví dụ tham chiếu của 1 biến int khác hoàn toàn với địa chỉ của 1 biến int
 
 int& x = y; nó khác hoàn toàn với int* x = &y;
 x này vẫn là kiểu int             x này là kiểu int* mẹ rồi   
@@ -215,9 +215,13 @@ vtable được tạo ra ở class con là B cũng có 2 con trỏ hàm 1 trỏ 
 
 - tiếp tục là đến thằng Vpointer: là 1 biến thành viên của class thôi, ơ mà được tạo ngầm đấy, không nhìn thấy đâu :))
 
-là như sau: khi biên dịch chương trình, thì class có virtual method thì compiler nó tạo ra 1 vtable cho class đó, đồng thời là nó cũng tạo thêm 1 biến thành viên cho class là vpointer, đồng nghĩa với việc mỗi object được tạo ra sẽ có 1 biến vpoiner như bao biến khác, làm tăng size của object thêm sizeof(vpointer) bytes
+là như sau: khi biên dịch chương trình, thì class có virtual method thì compiler nó tạo ra 1 vtable cho class đó, đồng thời là nó cũng tạo thêm 1 biến thành viên cho class là vpointer, đồng nghĩa với việc mỗi object được tạo ra sẽ có 1 biến vpoiner như bao biến khác, làm tăng size của object thêm sizeof(vpointer) bytes -> 8bytes vì size của con trỏ luôn bằng 8
+
+vtable là 1 cái mà program nó tạo ra cho vpointer cuả class trỏ tới, chứ nó k nằm trong class, nó có mỗi liên hệ mật thiết với class chứ k phải là của hay là nằm trong class
 
 và đây là cách mà dynamic static hoạt động: trong runtime, 1 lời gọi đến 1 hàm ảo trên 1 đối tượng thì vpointer của đối tượng đó sẽ được sử dụng để tìm vtable tương ứng của class
+
+=> trả lời câu hỏi, 1 class có virtual function thì size ít nhất bằng 8, vì nó tồn tại ít nhất 1 biến thành viên là vpointer
 
 - Vậy, đã có vài lần build mà bị bệnh là undefined reference to `vtable for MethodXXX
 
@@ -249,14 +253,14 @@ A* x = new B;
 
 - việc dùng đa hình giải quyết được cái vấn đề là 1 con trỏ hoặc tham chiếu kiểu base trỏ vào 1 kiểu con !
 
-- member initializer lists: là khởi tại danh sách thành viên, có 1 vài điểm khác nhau !
+- member initializer lists: là khởi tại danh sách thành viên, nó sẽ khởi tạo theo thứ tự mình khai báo các biến,có 1 vài điểm khác nhau !
 
 Đã biết là khai báo với khởi tạo là khác đúng không, thì việc mà mình khai báo, xong gán giá trị ban đầu ở constructor nó khác với khởi tạo giá trị ban đầu (nhìn biến const là rõ liền), tỷ như:
 
 class A{
 int x; // khai báo x, giá trị rác
 A(){
-int = 0; // gán giá trị
+x = 0; // gán giá trị
 }
 }
 
@@ -314,7 +318,7 @@ NOTE: nếu không define copy contructor, biến k phải con trỏ sẽ bình 
 còn 1 khi đã define copy contructor, muốn làm gì thì phải làm trong hàm, nếu ko biến sẽ k tự động gán, con trỏ sẽ trỏ vào 1 nơi k xác định 
 - nếu đã define move contructor thì bắt buộc phải define copy contructor
 
-- có thể sử dụng constructors của lớp base bằng cách gọi nó ở vị trí member initializer lists, nên dùng khi nào, khi cần khởi tạo các biến được delecare trong class B, trách việc phải khởi tạo lại ở class con thôi !
+- có thể sử dụng constructors của lớp base bằng cách gọi nó ở vị trí member initializer lists, nếu không, khi khởi tạo thằng con, sẽ mặc định gọi default constructor của thằng base nên dùng khi nào, khi cần khởi tạo các biến được delecare trong class B, trách việc phải khởi tạo lại ở class con thôi !
 class A{
 public:
 A(){}
@@ -328,7 +332,7 @@ public:
 B(int x, int y) : this->y{y}, A(x){} -> dùng constructor của A để khởi tạo x
 
 int y;
-}sss
+}
 
 CHÚ Ý: con trỏ this là con trỏ ẩn trỏ vào đối tượng hiện tại, vậy nên trong các hàm thành viên có thể sử dụng con trỏ this
 A a(0); sẽ hiểu như sau: a.A(0){a.this->x =0;}
@@ -402,7 +406,7 @@ ta sẽ thấy lúc này chương trình nó đã sử dụng 1 cơ chế như l
 - tưởng tượng như có 2 con trỏ, con trỏ 1 trỏ tới 1 mảng chưa có gì, con trỏ 2 trỏ tới 1 mảng nhiều phần từ, h nếu copy thì có nghĩa là copy từng phần tử từ mảng 2 -> 1, mất thời gian, move thì nó sẽ move luôn vùng nhớ của con trỏ 1 tới chỗ con trỏ 2, thành ra vẫn là 2 con trỏ trỏ cùng 1 vùng nhớ
 -> sẽ dùng copy contructor nếu y =x mà gán xong rồi nhưng lại vẫn muốn dùng thằng x;
 
-sẽ dùng move contructor nếu y = x và gán xong rồi k cần thằng x nữa, phải có step là gán x về null nếu trong x có con trỏ, nếu k sẽ bị 2 con trỏ trỏ cùng tới 1 svùng nhớ đó -> nói rồi, chỉ khác nhau ở hiệu suất chạy thôi
+sẽ dùng move contructor nếu y = x và gán xong rồi k cần thằng x nữa, phải có step là gán x về null nếu trong x có con trỏ, nếu k sẽ bị 2 con trỏ trỏ cùng tới 1 vùng nhớ đó -> nói rồi, chỉ khác nhau ở hiệu suất chạy thôi
 
 
 
@@ -413,7 +417,7 @@ ví dụ: sử dụng class A bên tr
 int main (){
 
     A x(9), y(3);
-    A z = x+y; // x.operator+(y), sau đó lại gọi copy contructors z.A(1 cái object tạm), nếu mà operator+ trả về là A& thì chính là z.A(x) ở đây x là kết quả sau khi thực hiện x+y
+    A z = x+y; // x.operator+(y), sau đó lại gọi copy contructors z.A('result after +'), nếu mà operator+ trả về là A& thì chính là z.A(x) ở đây x là kết quả sau khi thực hiện x+y
  
     return 0;
 }
@@ -581,7 +585,7 @@ second use: just can max(a,b) cho dù type k phải là int nữa, nó vẫn s�
 double c, d;
 then just call max(c,d)
 
-- CHÚ Ý: toán tử dùng trong hàm template phải được support bở typename T
+- CHÚ Ý: toán tử dùng trong hàm template phải được support bởi typename T
 - có thể sừ dụng nhiều typename
 template <typename T1, typename T2>
 void func(T1 a, T2 b){
