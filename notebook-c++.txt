@@ -13,6 +13,7 @@ Mục lục:
  - Operator Overloading in C++
  - CONST OBJECT
 9. STL Library FUNCTOR
+10. Extern, liên kết ngoài
 
 =================================================================================
 
@@ -651,8 +652,61 @@ for_each()
 
 File and Stream: https://www.geeksforgeeks.org/file-handling-c-classes/
 
+=================================================================================
 
+10. Extern, liên kết ngoài - https://cafedev.vn/tu-hoc-c-c-lien-ket-ben-ngoai-trong-c/
+liên kết là một thuộc tính của một định danh (không phải của một biến)
 
+- định danh có 1 thuộc tính khác có tên là liên kết, có nghĩa là nó sẽ xác định xem các khai báo khác của tên đó có tham chiếu đến cùng 1 đối tượng hay không, kiểu là khai báo tên như thế nhưng có phải chiếu đến cùng 1 đối tượng, 1 vùng nhớ hay không hay không, nếu không thì sẽ có chuyện liên quan đến phạm vi của biến
+- biến cục bộ không có liên kết, nghĩa là mỗi khai báo sẽ chỉ tham chiếu đến 1 đối tượng duy nhất
+
+ví dụ:
+int main()
+{
+    int x { 2 }; // local variable, no linkage
+ 
+    {
+        int x { 3 }; // this identifier x refers to a different object than the previous x
+    }
+
+    return 0;
+}
+
+- Phạm vi và liên kết: phạm vi thì xác định nơi có thể đọc biến đó và sử dụng 1 khai báo duy nhất, còn liên kết là xem xem có nhiều khai báo cùng tham chiếu đến 1 đối tượng hay không
+
+- có 2 liên kết: là liên kết nội bộ và liên kết bên ngoài
+- 1 biến non-const global sẽ có default là external linkage - liên kết ngoài
+- nếu 1 biến global được khai báo là const, hoặc static, hoặc constexpr thì sẽ có default là internal linkage- liên kết trong
+
+- về phạm vi của biến: trong 1 block, trong 1 file, trong 1 chương trình(gồm nhiều file) -> thì trong mỗi phạm vi đều phải tuân theo quy tắc 1 định nghĩa
+-> các biến sẽ bị lỗi multi define or redefine nếu trùng tên trong cùng 1 phạm vi
+
+- các object và function NỘI BỘ thì được xác định trong các file khác nhau là khác nhau, được coi là các thực thể độc lập, việc này thì cần nhìn xem nó có liên kết là internal linkage hay external linkage, nếu là external linkage thì nó sẽ được nhìn thấy ở nhiều file độc lập trong cùng 1 chương trình mà không cần include gì cả
+
+ví dụ: 2 file a.cpp và b.cpp cùng trong 1 project
+file a.cpp: static int g_x;
+file b.cpp: static int g_x;
+-> 2 biến g_x là độc lập vì chúng đều default là internal linkage
+
+nhưng nếu :
+file a.cpp:  int g_x;
+file b.cpp:  int g_x; -> multi define, 
+bởi vì default của global là external, nó có thể được nhìn thấy ở mọi file mà không cần include gì cả
+
+- các function thì mặc định là liên kết ngoài, trừ khi dùng từ khóa static
+
+- từ khóa extern sẽ tạo liên kết external cho định danh, nếu nó là external linkage rồi công dụng từ khóa này bị ignore đơn giản vì lúc này nó vô dụng
+
+- Để dử dụng 1 biến toàn từ ở 1 file khác, cần 1 khai báo chuyển tiếp
+- việc khai báo chuyển tiếp được thực hiện thông qua từ khóa extern(k có giá trị khở tạo)
+
+ví dụ:
+file a.cpp khai báo biến global là int g_x = 10;
+file b.cpp muôn dùng nó thì cần extern int g_x; -> nói rằng đây là 1 khai báo chuyển tiếp cho thằng g_x đã tồn tại, nghĩa là thằng g_x này sẽ tham chiếu đến thằng g_x đã tồn tại trước đó ở đâu đó
+-> include thì lại ăn redefine hay : hãy hiểu đơn giản lại về việc include là làm gì
+
+- hàm thì không dùng từ khóa extern, nó sẽ hiểu là khai báo chuyển tiếp hay hàm mới thông qua việc mình có define thân hàm ko
+- phạm vi file(được nhìn thấy trong 1 file- các biến toàn cục có liên kết là internal) < phạm vi toàn cầu(được nhìn thấy trong nhiều file, nghĩa là trong cả chương trình- các biến toàn cục có liên kết external)
 
 
 
