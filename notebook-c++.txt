@@ -710,6 +710,8 @@ file b.cpp muôn dùng nó thì cần extern int g_x; -> nói rằng đây là 1
 
 - lưu ý là 1 biến global trong file .h không ảnh hưởng đến file .cpp, vì khi chạy nó chạy file cpp mà, file .h chỉ để include
 
+- nếu khai báo extern mà không khởi tạo, nó sẽ hiểu là khai báo chuyển tiếp cho 1 thằng đã được define ở đâu đó rồi, nếu mà thằng nào cũng extern rồi k khởi tạo, rõ ràng sẽ bị lỗi không tìm thấy thằng nào đã tồn tại để mà tham ch
+
 
 
 
