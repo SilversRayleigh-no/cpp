@@ -706,7 +706,9 @@ file b.cpp muôn dùng nó thì cần extern int g_x; -> nói rằng đây là 1
 -> include thì lại ăn redefine hay : hãy hiểu đơn giản lại về việc include là làm gì
 
 - hàm thì không dùng từ khóa extern, nó sẽ hiểu là khai báo chuyển tiếp hay hàm mới thông qua việc mình có define thân hàm ko
-- phạm vi file(được nhìn thấy trong 1 file- các biến toàn cục có liên kết là internal) < phạm vi toàn cầu(được nhìn thấy trong nhiều file, nghĩa là trong cả chương trình- các biến toàn cục có liên kết external)
+- phạm vi file(được nhìn thấy trong 1 file- các biến toàn cục có liên kết là internal) < phạm vi toàn cầu(được nhìn thấy trong nhiều file, nghĩa là trong cả chương trình- các biến toàn cục có liên kết external)\
+
+- lưu ý là 1 biến global trong file .h không ảnh hưởng đến file .cpp, vì khi chạy nó chạy file cpp mà, file .h chỉ để include
 
 
 
