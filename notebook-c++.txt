@@ -1,5 +1,5 @@
 Mục lục:
-1. Data type, rvalue, lv
+1. Data type, rvalue, lvalue
 2. OPERATORS
 3. POINTER
 4. FUNCTION POINTR
@@ -14,6 +14,7 @@ Mục lục:
  - CONST OBJECT
 9. STL Library FUNCTOR
 10. Extern, liên kết ngoài
+11. Exception Handing and Signal handing
 
 =================================================================================
 
@@ -32,12 +33,15 @@ void function(int&& n){
     LOG << "rvalue reference: " << n; // =3
 } (2)
 
+
 int main (){
 
     function(9); // call rvalue reference (2), cũng có thể call đến lvalua reference (1) nếu paramater là const int& nếu k define (2)
     function(global); // call lvalue reference (1), có thể call đến rvalue reference (2) nếu call như sau: function(std::move(global))
     return 0;
 }
+
+sử dụng rvalue reference hay std::move giúp ta loại bỏ được thao tác cấp phát, copy dữ liệu , hủy object, nói chung là kha khá performance
 
 =================================================================================
 
@@ -161,7 +165,7 @@ FUNCTION
 
 return void
 
-return giá trị thì nó sẽ create ra đối tượng tạm thời để lưu cái giá trị đó rồi sau đó sẽ destroy cái đối tượng đó luôn, mà bh complier nó gán luôn chứ có thể là không cần tạo đối tượng tạm
+return giá trị thì nó sẽ create ra đối tượng tạm thời để lưu cái giá trị đó rồi sau đó sẽ destroy cái đối tượng đó luôn, mà bh complier nó tối ưu nó dùng cơ chế m chứ không thấy cần tạo đối tượng tạm nữa
 
 return con trỏ hoặc return tham chiếu cần chú ý cái đối tượng mình chọc vào, là biến cục bộ thì oẳng chó
 
@@ -174,6 +178,8 @@ x này vẫn là kiểu int             x này là kiểu int* mẹ rồi
 
 STATIC DISPATH, DYNAMIC DISPATH trong c++
 
+mình nghĩ sẽ clean: cái vpointer được tạo ra ở private của mỗi class đo đó dùng vtable là khác nhau trỏ đến vtable khác nhau đối với mỗi clas -> nó phải như vậy
+
 (link xịn: https://cppdeveloper.com/c-nang-cao/virtual-tables-vtable-trong-c/)
 
 - trước hết thì hãy hiểu static dispath là gì: trong case này có thể hiểu static dispath là việc tìm đúng địa chỉ của hàm cần gọi, trong case bình thường, khi không dùng virtual method, thì khi chúng ta định nghĩa 1 hàm trong class thì lúc biên dịch thằng compiler nó sẽ lưu địa chỉ hàm và dùng để jump đến cái địa chỉ này để chạy hàm mỗi khi hàm được gọi, là địa chỉ của dòng lệnh đầu tiên trong hàm thì phải (nhân tiện đây cũng là lý do mình có thể dùng con trỏ hàm)
@@ -182,7 +188,11 @@ STATIC DISPATH, DYNAMIC DISPATH trong c++
 
 OK, dễ hiểu vlìn ?, bây giờ nói về vtable, vpointer and dynamic dispatch
 
-- á đù, trước tiên là lòi ra cái dynamic dispath: thì như nào ? là define ra 1 cái hàm, và nó có địa chỉ, thì lúc biên dịch, compiler xác định được luôn cái địa chỉ đó của hàm thì quá trình đó gọi là static dispath. Ngược lại, nếu nó không thể xác định trước được địa chỉ của hàm tại lúc biên dịch, mà phải xác định tại runtime, thì đó là dynamic dispath, trường hợp này sảy ra đối với hàm ảo - virtual method, ví dụ nhá:
+- á đù, trước tiên là lòi ra cái dynamic dispath: thì như nào ? là define ra 1 cái hàm, và nó có địa chỉ, thì lúc biên dịch, compiler xác định được luôn cái địa chỉ đó của hàm thì quá trình đó gọi là static dispath. Ngược lại, nếu nó không thể xác định trước được địa chỉ của hàm tại lúc biên dịch, mà phải xác định tại runtime, thì đó là dynamic dispath, trường hợp này sảy ra đối với hàm ảo - virtual method, 
+
+clean hơn 1 chút này: giữa class con và class cha thì k thể nạp chồng function, nó chỉ có thể định nghĩa lại, ta chỉ có thể nạp chồng function trong cùng 1 class,
+
+ví dụ nhá:
 
 class A{
 public:
@@ -236,10 +246,23 @@ CLASS
 
 - class như 1 cái bộ khung thôi, khi tạo xong 1 cái class thì cũng k có vùng nhớ hay gì cấp phát đi đâu cả, nó là 1 cái bộ khung chung để xây dựng nên các object thôi, giống kiểu bản vẽ nhà 3d với việc xây dựng lên ngồi nhà ấy thật sự vậy !
 
-- ban đầu chắc nên nói về nạp chồng và đa hình luôn đi;
-thì khi mà 1 class kế thừa 1 class khác thì nó có thể sử dụng lại được data hoặc function trong protected or public, ngược lại thì không (mean đối tượng thuộc class cha thì không sử dụng được tài nguyên ở class con)
+4 tính chất: đa hình, kế thừa, đóng gói, trừu tượng
+nói về kế thừa và đa hình:
+kế thừa: thì sẽ có 3 kiểu kế thừa luôn, là public, private, protected, 3 cái phạm vi truy cập cho các thành phần được kế thừa trong class con
 
-- 1 con trỏ lớp cha luôn có thể trỏ  đến 1 đối tượng lớp con, cái việc dùng con trỏ là muốn thao tác với giá trị, hay là cái vùng nhớ, hay là cái dữ liệu mà con trỏ nó trỏ vào, nhưng ở đây nếu k dùng đa hình:
+phạm vi private của 1 class là bảo vệ, nghĩa là không thể truy xuất nó từ bên ngoài class, do đó kế thừa thì cũng k thể truy xuất được tại class con , nhưng có thể sử dụng bằng cách làm cái function get nó tại class base, dùng tại class con thì ok
+
+public: public->public, protected->protected, 
+protected: public, protected -> protected 
+private: public, protected -> private 
+
+-> có 3 kiểu kế thừa là như vậy
+
+và sẽ có 2 kiểu đa hình: tĩnh - compiler time, động - runtime
+đa hình tĩnh chính là việc nạp chồng hàm trong trong class
+đa hình động là cách dùng virtual đấy
+
+- 1 con trỏ lớp cha luôn có thể trỏ  đến 1 đối tượng lớp con, cái việc dùng con trỏ là muốn thao tác với giá trị, hay là cái vùng nhớ, hay là cái dữ liệu mà con trỏ nó trỏ vào, nhưng ở đây nếu k dùng đa hình
 
 - VIRTUAL METHOD
 class A;
@@ -319,7 +342,7 @@ NOTE: nếu không define copy contructor, biến k phải con trỏ sẽ bình 
 còn 1 khi đã define copy contructor, muốn làm gì thì phải làm trong hàm, nếu ko biến sẽ k tự động gán, con trỏ sẽ trỏ vào 1 nơi k xác định 
 - nếu đã define move contructor thì bắt buộc phải define copy contructor
 
-- có thể sử dụng constructors của lớp base bằng cách gọi nó ở vị trí member initializer lists, nếu không, khi khởi tạo thằng con, sẽ mặc định gọi default constructor của thằng base nên dùng khi nào, khi cần khởi tạo các biến được delecare trong class B, trách việc phải khởi tạo lại ở class con thôi !
+- có thể sử dụng constructors của lớp base bằng cách gọi nó ở vị trí member initializer lists, nếu không, khi khởi tạo thằng con, sẽ mặc định chỉ gọi default constructor của thằng base, nên dùng khi nào, khi cần khởi tạo các biến được delecare trong class cha, trách việc phải khởi tạo lại ở class con thôi !
 class A{
 public:
 A(){}
@@ -400,7 +423,7 @@ int main (){
 }
 
 ta sẽ thấy lúc này chương trình nó đã sử dụng 1 cơ chế như là std::move vây ý, in log sẽ thấy, nếu ở main chỉ viết là return A()
-, thì rõ ràng nó đã contructors ở function returnA và kết thúc hàm nó destroy cái đối tượng đó(mean destroy cái vùng nhớ đó), nhưng nếu viết như bên trên, A n = returnA(); -> vẫn sẽ là contructor 1 cái object từ function returnA này, nhưng sau đó k hề có copy contructor hay là move contructor để cretae ra object n nữa, ta cũng k hề thấy có object nào bị destroy đi, thế có nghĩa là, nó đã move cái vùng nhớ của object tạm được cretae ra ở function r trực tiếp sang cho thằng object n, và vòng đời của nó sẽ gán với n, nên ta sẽ k thấy có object nào bị destroy ở đây cả
+, thì rõ ràng nó đã contructors ở function returnA và kết thúc hàm nó destroy cái đối tượng đó(mean destroy cái vùng nhớ đó), nhưng nếu viết như bên trên, A n = returnA(); -> vẫn sẽ là contructor 1 cái object từ function returnA này, nhưng sau đó k hề có copy contructor hay là move contructor để cretae ra object n nữa, ta cũng k hề thấy có object nào bị destroy đi, thế có nghĩa là, nó đã move cái vùng nhớ của object tạm được cretae ra ở function r trực tiếp sang cho thằng object n, hoặc hiểu là move cái định danh n đến cái vùng nhớ đó , và vòng đời của nó sẽ gán với n, nên ta sẽ k thấy có object nào bị destroy ở đây cả
 
 -> TÓM LẠI: thấy, sau 1 hồi check, mình thấy move constructor hay copy contructor khác nhau mỗi chỗ là nó sẽ tiết kiệm quá trình gán giá trị, thay vì copy từ chỗ này sang chỗ khác, thì nó trỏ luôn tới đó ! ,refer lại cái cơ chế bên trên
 
@@ -409,6 +432,7 @@ ta sẽ thấy lúc này chương trình nó đã sử dụng 1 cơ chế như l
 
 sẽ dùng move contructor nếu y = x và gán xong rồi k cần thằng x nữa, phải có step là gán x về null nếu trong x có con trỏ, nếu k sẽ bị 2 con trỏ trỏ cùng tới 1 vùng nhớ đó -> nói rồi, chỉ khác nhau ở hiệu suất chạy thôi
 
+clean: nghĩa là áp dụng trong class thì hoàn toàn là do mình define nó ntn, move thì mình sẽ cho thằng mình đang tạo trỏ đến thằng kia, rồi cho thằng kia null, chứ nếu trong hàm move mà mình gán giá trị như bình thường thì chả khác 
 
 
 - Operator Overloading in C++
@@ -711,6 +735,26 @@ file b.cpp muôn dùng nó thì cần extern int g_x; -> nói rằng đây là 1
 - lưu ý là 1 biến global trong file .h không ảnh hưởng đến file .cpp, vì khi chạy nó chạy file cpp mà, file .h chỉ để include
 
 - nếu khai báo extern mà không khởi tạo, nó sẽ hiểu là khai báo chuyển tiếp cho 1 thằng đã được define ở đâu đó rồi, nếu mà thằng nào cũng extern rồi k khởi tạo, rõ ràng sẽ bị lỗi không tìm thấy thằng nào đã tồn tại để mà tham ch
+
+=================================================================================
+
+11. Exception handing and Signal handing
+
+try catch
+try phải có catch, catch phải có try, đi cùng với nhau thành 1 cặp, cùng cấp
+catch phải bắt đúng kiểu dữ liệu được throw ra, cat (...) thì mặc định là có thể bắt mọi loại kiểu dữ liệu
+throw rồi thì nó sẽ k chạy tiếp những câu lệnh sau đó trong khối lệnh nữa vì tại đó nó hiểu là chương trình nó xảy ra 1 exception
+
+signal handing: thì signal là các ngắt (interrup) buộc hệ điều hành phải thực thi tác vụ tương ứng, means kết thúc ngay cái tiến trình đang chạy
+
+thì thằng C++ nó cũng cung cấp 1 số signal để mình có thể emit hoặc là bắt nó
+thư viện cs
+ví dụ: signal SIGSEGV được bắn ra khi mình truy cập vào vùng nhớ k hợp lệ(đa số sẽ làm chương trình crash)
+
+SIGBUS: truy cập vào 1 địa chỉ không hợp lệ
+
+
+
 
 
 
