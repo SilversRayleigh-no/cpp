@@ -91,6 +91,54 @@ chốt lại:
 
 => NHẬN RA: * sẽ là cái nhận biết const sẽ aplly cho cái nào, trước * thì apply cho kiểu trỏ đến (hằng hay ko), sau * thì apply cho con trỏ(con trỏ hằng hay là ko)
 
+============================================================================================
+
+* Con trỏ thông minh: Smart Pointer
+std::unique_ptr
+- small, fast, quản lý độc quyền 1 resource, không thẻ copy sang unique khác, chỉ có thể chuyển rvalue sang, convert sang share_pointer cũng thế
+chuyển sang rvalue chính là dùng std::move
+- std::unique_ptr<class> ob(new class);
+- std::unique_ptr<class> ob1 = std::move(ob); \\ dùng std::move chuyển sang rvalue
+- std::shared_ptr<class> ob2 = std::move(ob); \\ dùng std::move chuyển sang rvalue, nói chung là phải chuyển sang rvalue
+- bình thường nó sẽ xóa resource bằng delete, custom deteler thì dùng bằng lambda được, lúc đó thì mình phải tự thực hiện delete trong biểu thức custom delete
+- custom deleter is part of unique pointer type
+EXAMPLE:
+auto del1 = [](mclass* mob){
+    cout << "delete custom 1" << endl;
+    delete mob;
+};
+auto del2 = [](mclass* mob){
+    cout << "delete custom 2" << endl;
+    delete mob;
+};
+class mclass;
+std::unique_ptr<mclass, decltype(del1)> obunique1(new mclass, del1);
+std::unique_ptr<mclass, decltype(del1)> obunique2 = std::move(obunique1);
+// 2 cái sau sẽ wrong, vì khi kiểu của thằng obunique1 đã fix cứng, del là del1 - vì deleter là 1 phần của pointer type
+=> thay deleter là coi như là type khác
+std::unique_ptr<mclass, decltype(del2)> obunique2 = std::move(obunique1);
+std::unique_ptr<mclass> obunique2 = std::move(obunique1);
+/*------------------------------------------------------------------------------------------------------------------------*/
+std::shared_ptr
+- quản lý thông qua 1 biếm đếm gọi là reference count
+- tăng giá trị biến đếm thông qua contructor của std::shared_ptr và giảm giá trị thông qua destructor
+copy assignment sẽ làm cả 2
+- reference count về tới 0, std::shared_ptr sẽ destroy
+- size gấp đôi size của raw pointer: vì gồm 2 raw pointer 1 trỏ tới resource, 1 trỏ tới control block có chứa reference count
+- memory cho reference count phải được cấp phát động
+- tăng giảm cho reference count phải là atomic
+- support custom deleter, but not like unique pointer, - custom deleter is not part of unique pointer type
+- control block sẽ chứa reference count/ weak pointer/ copy of custom deleter ...
+- share pointer phải tạo từ 1 share pointer, nếu tạo từ raw pointer thì nó sẽ có control block khác-  hiểu như control block tạo ra từ thằng share pointer đầu tiên
+- dùng make_shared thì k thể dùng được custom deleter
+- truyền con trỏ this sẽ được tính là raw pointer, khi này dùng public std::enable_shared_from_this<Widget>
+/*------------------------------------------------------------------------------------------------------------------------*/
+std::weak_ptr
+- thường được tạo ra từ shared pointer, nhưng k ảnh hưởng tới biến đếm
+- sử dụng khi cần dùng bộ nhớ đệm cache, observer list(observer pattern), tránh vòng lặp shared pointer
+
+*** Why use make_unique and make_shared instead of use direct new 
+
 - 1 điểm nhỏ về share_ptr và weak_ptr
 ta có 1 ví dụ như sau:
 
@@ -116,7 +164,7 @@ int main()
 }
 
 => dù là gọi theo cách (1) hay (2) thì ta sẽ đều thấy object bị hủy, do đó ta có thể chắc chắc khi 1 object được quản lý bởi shared_ptr, nó sẽ bị delete khi count của shared_ptr = 0, nghĩa là thằng shared_ptr cuối cùng giữ nó bị hủy, nếu có bất kì weak_ptr nào cũng trỏ vào đó thì cũng k giữ được life cho object.
-Trong TH trên, nếu sử dụng raw pointer, gọi theo cách 1 sẽ bị leak vì khi đó k còn con trỏ nào giữ object đó nữa, gọi theo cách 2 thì ta sẽ không thấy object bị hủy trước khi main kết thúc vì l
+Trong TH trên, nếu sử dụng raw pointer, gọi theo cách 1 sẽ bị leak vì khi đó k còn con trỏ nào giữ object đó nữa, gọi theo cách 2 thì ta sẽ không thấy object bị hủy trước khi main kết thúc vì while(true)
 
 =================================================================================
 
