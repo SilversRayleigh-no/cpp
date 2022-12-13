@@ -16,11 +16,12 @@ Mục lục:
 10. Extern, liên kết ngoài
 11. Exception Handing and Signal handing
 
-=================================================================================
+==================================================================================================================================================================
 
-Data type: có 2 loại, 1 là các kiểu dữ liệu có sẵn, 2 là kiểu do user define ra, kể cả kiểu con trỏ hàm nhé !
+Data type: có 2 loại, 1 là các kiểu dữ liệu có sẵn, 2 là kiểu do user define ra, kể cả kiểu con trỏ hàm nhé, dùng typedef là được đấy!
 
-Hiện tại mình sẽ định nghĩa nó như thế này: 1 lvalue là 1 expression(n là 1 expression mà n+n cũng là 1 expression) mà refer tới 1 object, là cái mình có thể nhìn thấy, có thể get được địa chỉ, có thể sửa được giá trị tại cái địa chỉ đó, ngược lại thì là rvalue 
+Hiện tại mình sẽ định nghĩa nó như thế này: 1 lvalue là 1 expression(n là 1 expression mà n+n cũng là 1 expression) mà refer tới 1 object, là cái mình có thể nhìn 
+thấy, có thể get được địa chỉ, có thể sửa được giá trị tại cái địa chỉ đó, ngược lại thì là rvalue 
 
 void function(int& n){
     LOG << "lvalue reference";
@@ -43,23 +44,27 @@ int main (){
 
 sử dụng rvalue reference hay std::move giúp ta loại bỏ được thao tác cấp phát, copy dữ liệu , hủy object, nói chung là kha khá performance
 
-=================================================================================
+==================================================================================================================================================================
 
 OPERATORS
 
 - về unary operator nó là toán tử 1 ngôi, nghĩa là chỉ cần 1 toán hạng để sử dụng được, ví dụ như ++ hay --
-- về binary operator thì nó hoạt động trên 2 toán hạng, đơn giản như ==, !=, >, <...có 1 loại đặc biệt là toán tử bit(&, |, ^), các toạn hạng của nó sẽ phải chuyển sang kiểu nhị phân 1 với 0, và ghép chúng lần lượt theo toán tử để ra kết quả
+- về binary operator thì nó hoạt động trên 2 toán hạng, đơn giản như ==, !=, >, <...có 1 loại đặc biệt là toán tử bit(&, |, ^), các toạn hạng của nó sẽ phải chuyển
+sang kiểu nhị phân 1 với 0, và ghép chúng lần lượt theo toán tử để ra kết quả
 - toán tử logic: &&, ||
 - toán tử 3 ngôi, ví dụ ((a>b?a:b)>c)? (a>b?a:b):c, ban đầu so sánh a vs b, sau đó so sánh vs c
 
 - tham chiếu thì khai báo kèm theo &, hiểu đơn giản nó như 1 cái tên thứ 2 cho 1 cái biến đã tồn tại, k phải là 1 biến mới
-=>phải khởi tạo nó tham chiếu đến 1 biến chứ không được khai báo rồi để đó, nó sẽ lỗi(con trỏ thì không)
+=> phải khởi tạo nó tham chiếu đến 1 biến chứ không được khai báo rồi để đó, nó sẽ lỗi(con trỏ thì không)
 
-- khi truyền tham số theo dạng tham chiếu đến hàm thì nó sẽ tránh việc tạo ra 1 đối tượng tạm như việc truyền tham trị, đồng nghĩa nó cũng có khả năng thay đổi giá trị của thằng gốc truyền đến -> để chắc chắn thì ta nên thêm const vào, nhưng khi đó phải chú ý kiểu return về, khi tham số là const & thì k thể return về kiểu tham chiếu, lý do cũng giống như nếu tham số là kiểu tham chiếu thì k được truyền hằng số vào
+- khi truyền tham số theo dạng tham chiếu đến hàm thì nó sẽ tránh việc tạo ra 1 đối tượng tạm như việc truyền tham trị, đồng nghĩa nó cũng có khả năng thay đổi giá trị
+của thằng gốc truyền đến -> để chắc chắn thì ta nên thêm const vào, nhưng khi đó phải chú ý kiểu return về, khi tham số là const & thì k thể return về kiểu tham chiếu,
+lý do cũng giống như nếu tham số là kiểu tham chiếu thì k được truyền hằng số vào
 
-- nó khác con trỏ ở chỗ, con trỏ nắm địa chỉ và có thể trỏ đi được chỗ khác, còn nó bất di bất dịch vì đơn giản nó chính là cái biến nó tham chiếu đến, có vẻ 1 tham chiếu nó sẽ giống với Type *const pointer;
+- nó khác con trỏ ở chỗ, con trỏ nắm địa chỉ và có thể trỏ đi được chỗ khác, còn nó bất di bất dịch vì đơn giản nó chính là cái biến nó tham chiếu đến, có vẻ 1 tham chiếu 
+nó sẽ giống với Type *const pointer;
 
-=================================================================================
+==================================================================================================================================================================
 
 Con trỏ thường: POINTER
 
@@ -79,10 +84,13 @@ hoặc kể cả con trỏ trỏ đến 1 con trỏ khác thì cũng thế -> c�
 
 => cái việc khai báo con trỏ như thế nào sẽ quyết định việc có thể thao tác 2 thứ trên như thế nào
 
-- type* p thì p là 1 con trỏ trỏ đến 1 vùng nhớ kiểu type, có thể trỏ sang 1 vùng nhớ khác, nắm giữ địa chỉ của vùng nhớ đó. có thể thay đổi giá trị của vùng nhớ đó thông qua con trỏ
-- const type* p thì p là con trỏ trỏ đến vùng nhớ kiểu const type, or kiểu type cũng được, cũng có thể trỏ sang vùng nhớ khác, nhưng không thể thay đổi giá trị vùng nhớ đó thông qua con trỏ
-- type* const p thì p là 1 hằng con trỏ, không trỏ đi chỗ khác được, mean trỏ đến 1 vùng nhớ duy nhất kiểu type, có thể thay đôi giá trị thông qua con trỏ
-- const type* const p thì p là 1 con trỏ hằng trỏ đến 1 hằng giá trị, vẫn có thể trỏ đến 1 giá trị không hằng nhưng ý nghĩa ở đây là nó không thể trỏ đi chỗ khác cũng k thể thay đổi giá trị nó trỏ đến thông qua nó
+- type* p thì p là 1 con trỏ trỏ đến 1 vùng nhớ kiểu type, có thể trỏ sang 1 vùng nhớ khác, nắm giữ địa chỉ của vùng nhớ đó. có thể thay đổi giá trị của vùng nhớ đó 
+thông qua con trỏ
+- const type* p thì p là con trỏ trỏ đến vùng nhớ kiểu const type, or kiểu type cũng được, cũng có thể trỏ sang vùng nhớ khác, nhưng không thể thay đổi giá trị vùng 
+nhớ đó thông qua con trỏ
+- type* const p thì p là 1 hằng con trỏ, không trỏ đi chỗ khác được, mean trỏ đến 1 vùng nhớ duy nhất kiểu type, có thể thay đổi giá trị thông qua con trỏ
+- const type* const p thì p là 1 con trỏ hằng trỏ đến 1 hằng giá trị, vẫn có thể trỏ đến 1 giá trị không hằng nhưng ý nghĩa ở đây là nó không thể trỏ đi chỗ khác cũng 
+k thể thay đổi giá trị nó trỏ đến thông qua nó
 
 chốt lại:
 - type*: thoải mái
@@ -91,17 +99,18 @@ chốt lại:
 
 => NHẬN RA: * sẽ là cái nhận biết const sẽ aplly cho cái nào, trước * thì apply cho kiểu trỏ đến (hằng hay ko), sau * thì apply cho con trỏ(con trỏ hằng hay là ko)
 
-============================================================================================
+==================================================================================================================================================================
 
 * Con trỏ thông minh: Smart Pointer
 std::unique_ptr
-- small, fast, quản lý độc quyền 1 resource, không thẻ copy sang unique khác, chỉ có thể chuyển rvalue sang, convert sang share_pointer cũng thế
+- small, fast, quản lý độc quyền 1 resource, không thể copy sang unique_ptr khác, chỉ có thể chuyển rvalue sang, convert sang share_pointer cũng thế -> use std::move
 chuyển sang rvalue chính là dùng std::move
 - std::unique_ptr<class> ob(new class);
 - std::unique_ptr<class> ob1 = std::move(ob); \\ dùng std::move chuyển sang rvalue
 - std::shared_ptr<class> ob2 = std::move(ob); \\ dùng std::move chuyển sang rvalue, nói chung là phải chuyển sang rvalue
 - bình thường nó sẽ xóa resource bằng delete, custom deteler thì dùng bằng lambda được, lúc đó thì mình phải tự thực hiện delete trong biểu thức custom delete
 - custom deleter is part of unique pointer type
+
 EXAMPLE:
 auto del1 = [](mclass* mob){
     cout << "delete custom 1" << endl;
@@ -112,13 +121,16 @@ auto del2 = [](mclass* mob){
     delete mob;
 };
 class mclass;
-std::unique_ptr<mclass, decltype(del1)> obunique1(new mclass, del1);
-std::unique_ptr<mclass, decltype(del1)> obunique2 = std::move(obunique1);
+std::unique_ptr<mclass, decltype(del1)> obunique1(new mclass, del1); ->      type là <mclass, decltype(del1)>
+std::unique_ptr<mclass, decltype(del1)> obunique2 = std::move(obunique1); -> type là <mclass, decltype(del1)>
 // 2 cái sau sẽ wrong, vì khi kiểu của thằng obunique1 đã fix cứng, del là del1 - vì deleter là 1 phần của pointer type
 => thay deleter là coi như là type khác
-std::unique_ptr<mclass, decltype(del2)> obunique2 = std::move(obunique1);
-std::unique_ptr<mclass> obunique2 = std::move(obunique1);
+
+std::unique_ptr<mclass, decltype(del2)> obunique2 = std::move(obunique1); -> type là <mclass, decltype(del2)>
+std::unique_ptr<mclass> obunique2 = std::move(obunique1); -> cho nên đâu thể convert type từ <mclass, decltype(del1)> gắn sang <mclass, decltype(del2)>
+
 /*------------------------------------------------------------------------------------------------------------------------*/
+
 std::shared_ptr
 - quản lý thông qua 1 biếm đếm gọi là reference count
 - tăng giá trị biến đếm thông qua contructor của std::shared_ptr và giảm giá trị thông qua destructor
@@ -129,15 +141,31 @@ copy assignment sẽ làm cả 2
 - tăng giảm cho reference count phải là atomic
 - support custom deleter, but not like unique pointer, - custom deleter is not part of unique pointer type
 - control block sẽ chứa reference count/ weak pointer/ copy of custom deleter ...
-- share pointer phải tạo từ 1 share pointer, nếu tạo từ raw pointer thì nó sẽ có control block khác-  hiểu như control block tạo ra từ thằng share pointer đầu tiên
+- share pointer phải tạo từ 1 share pointer, nếu tạo từ raw pointer thì nó sẽ có control block khác-  hiểu như control block được tạo ra từ thằng share pointer đầu tiên
+nếu tạo share pointer thông qua raw resource
 - dùng make_shared thì k thể dùng được custom deleter
 - truyền con trỏ this sẽ được tính là raw pointer, khi này dùng public std::enable_shared_from_this<Widget>
+
 /*------------------------------------------------------------------------------------------------------------------------*/
+
 std::weak_ptr
 - thường được tạo ra từ shared pointer, nhưng k ảnh hưởng tới biến đếm
 - sử dụng khi cần dùng bộ nhớ đệm cache, observer list(observer pattern), tránh vòng lặp shared pointer
 
 *** Why use make_unique and make_shared instead of use direct new 
+
+*** khác biệt giữa dùng new và make function như make_unique, make_shared:
+- thứ 1 là về phân bổ vùng nhớ, create share_ptr bằng cách dùng trực tiếp new sẽ tạo ra 2 memory area riêng biệt 1 là cho object, 2 là cho control block, memory cho 
+object có thể được released trước memory cho control block, còn dùng make_share thì k thể, vì dùng make shared thì chỉ có 1 vùng nhớ chung cho cả 2 tk này, explain: 
+trong control block, ngoài reference count còn có weak count - coi như là đếm số weak pointer trỏ tới, thì memory cho control block chỉ bị hủy khi cả reference count 
+và weak count đều về 0, còn memory cho objetc hủy khi chỉ reference count về 0
+
+- thứ 2 là về safe - exception, ví dụ có biểu thức gọi function như sau: 
+processWidget(std::shared_ptr(new Widget, cusDel), computePriority()); 
+thì C++ nó không có thứ tự để đánh giá biểu thức, shared pointer sẽ gồm create Widget trên heap, sau đó run contructor của shared_ptr sẽ nắm được cái vùng heap đó của 
+Widget, rồi chạy function computePriority, nhưng nếu computePriority chạy sau bước new Widget và trước bước contructors của shared và computePriority  xảy ra 1 exception, 
+đối tượng shared_ptr k nắm được new Widet trả về -> leak
+-> dùng make_shared, nếu có custom deleter k dùng được make shared, thì tạo shared pointer trước rồi mới truyền vào hàm
 
 - 1 điểm nhỏ về share_ptr và weak_ptr
 ta có 1 ví dụ như sau:
@@ -163,16 +191,20 @@ int main()
     return 0;
 }
 
-=> dù là gọi theo cách (1) hay (2) thì ta sẽ đều thấy object bị hủy, do đó ta có thể chắc chắc khi 1 object được quản lý bởi shared_ptr, nó sẽ bị delete khi count của shared_ptr = 0, nghĩa là thằng shared_ptr cuối cùng giữ nó bị hủy, nếu có bất kì weak_ptr nào cũng trỏ vào đó thì cũng k giữ được life cho object.
-Trong TH trên, nếu sử dụng raw pointer, gọi theo cách 1 sẽ bị leak vì khi đó k còn con trỏ nào giữ object đó nữa, gọi theo cách 2 thì ta sẽ không thấy object bị hủy trước khi main kết thúc vì while(true)
+=> dù là gọi theo cách (1) hay (2) thì ta sẽ đều thấy object bị hủy, do đó ta có thể chắc chắc khi 1 object được quản lý bởi shared_ptr, nó sẽ bị delete khi count của 
+shared_ptr = 0, nghĩa là thằng shared_ptr cuối cùng giữ nó bị hủy, nếu có bất kì weak_ptr nào cũng trỏ vào đó thì cũng k giữ được life cho object.
+Trong TH trên, nếu sử dụng raw pointer, gọi theo cách 1 sẽ bị leak vì khi đó k còn con trỏ nào giữ object đó nữa, gọi theo cách 2 thì ta sẽ không thấy object bị hủy trước 
+khi main kết thúc vì while(true)
 
-=================================================================================
+==================================================================================================================================================================
 
 FUNCTION POINTR
 
-Con trỏ hàm: là con trỏ trỏ tới 1 hàm, k có cấp phát vùng nhớ gì cả, giữ địa chỉ tại đoạn mã bắt đầu chạy hàm, khi khai báo cần xác định kiểu return của hàm, tham số truyền, tên con trỏ phải đặt trong ()
+Con trỏ hàm: là con trỏ trỏ tới 1 hàm, k có cấp phát vùng nhớ gì cả, giữ địa chỉ tại đoạn mã bắt đầu chạy hàm, khi khai báo cần xác định kiểu return của hàm, tham số truyền, 
+tên con trỏ phải đặt trong ()
 - khi truyền địa chỉ hàm cho con trỏ hàm không cần &, vì đơn giản, bản thân hàm cũng kiểu như là 1 địa chỉ, 1 con trỏ hàm mẹ rồi. viết mỗi tên thôi nhé
-- parameter default của hàm không thể dùng cho con trỏ hàm, vì parameter default của hàm được compiler xác nhận tại thời điểm compile, còn function pointer thì tại thời điểm chạy, nên vẫn phải truyền đủ parameter
+- parameter default của hàm không thể dùng cho con trỏ hàm, vì parameter default của hàm được compiler xác nhận tại thời điểm compile, còn function pointer thì tại thời điểm 
+chạy, nên vẫn phải truyền đủ parameter
 
 ví dụ: 
 int function(int x, int y){return ...}
@@ -201,11 +233,12 @@ dùng namespace để ta tách biệt đoạn code đó trong 1 scope mà k lo b
 khi mà 2 namespace có cùng tên thì thực chất chúng là 1,thì khi đó ko được trùng tên tên các biến các hàm, khi mà truy xuất các thằng trong 
 namespace ta dùng toán tử ::, namespace khác class, bản thân nó chỉ là 1 nơi để gom lại trong 1 scope, để phân biệt, còn class là 1 data type
 
-=================================================================================
+==================================================================================================================================================================
 
 FUNCTION
 
-- inline function là hàm nội tuyến, khi mình đặt từ khóa inline trước hàm thì nó yêu cầu complier thực hiện, nội tuyến nghĩa là nó sẽ coi như ta viết trực tiếp nó vào mã mà ko phải là gọi hàm,  còn constexpr function thì nó là yêu cầu trinh biên dịch biên dịch cái hàm đó tại thời gian biên dịch, thì lúc chạy chương trình nó sẽ nhanh hơn
+- inline function là hàm nội tuyến, khi mình đặt từ khóa inline trước hàm thì nó yêu cầu complier thực hiện, nội tuyến nghĩa là nó sẽ coi như ta viết trực tiếp 
+nó vào mã mà ko phải là gọi hàm,  còn constexpr function thì nó là yêu cầu trinh biên dịch biên dịch cái hàm đó tại thời gian biên dịch, thì lúc chạy chương trình nó sẽ nhanh hơn
 
 - tham số mặc định của hàm phải đứng sau các tham số k mặc định
 
@@ -213,7 +246,8 @@ FUNCTION
 
 return void
 
-return giá trị thì nó sẽ create ra đối tượng tạm thời để lưu cái giá trị đó rồi sau đó sẽ destroy cái đối tượng đó luôn, mà bh complier nó tối ưu nó dùng cơ chế m chứ không thấy cần tạo đối tượng tạm nữa
+return giá trị thì nó sẽ create ra đối tượng tạm thời để lưu cái giá trị đó rồi sau đó sẽ destroy cái đối tượng đó luôn, mà bh complier nó tối ưu nó dùng cơ chế m chứ 
+không thấy cần tạo đối tượng tạm nữa
 
 return con trỏ hoặc return tham chiếu cần chú ý cái đối tượng mình chọc vào, là biến cục bộ thì oẳng chó
 
@@ -222,7 +256,7 @@ chú ý khi return về kiểu tham chiếu thì đừng nhìn thấy symbol & m
 int& x = y; nó khác hoàn toàn với int* x = &y;
 x này vẫn là kiểu int             x này là kiểu int* mẹ rồi   
 
-=================================================================================
+==================================================================================================================================================================
 
 STATIC DISPATH, DYNAMIC DISPATH trong c++
 
@@ -230,13 +264,17 @@ mình nghĩ sẽ clean: cái vpointer được tạo ra ở private của mỗi 
 
 (link xịn: https://cppdeveloper.com/c-nang-cao/virtual-tables-vtable-trong-c/)
 
-- trước hết thì hãy hiểu static dispath là gì: trong case này có thể hiểu static dispath là việc tìm đúng địa chỉ của hàm cần gọi, trong case bình thường, khi không dùng virtual method, thì khi chúng ta định nghĩa 1 hàm trong class thì lúc biên dịch thằng compiler nó sẽ lưu địa chỉ hàm và dùng để jump đến cái địa chỉ này để chạy hàm mỗi khi hàm được gọi, là địa chỉ của dòng lệnh đầu tiên trong hàm thì phải (nhân tiện đây cũng là lý do mình có thể dùng con trỏ hàm)
+- trước hết thì hãy hiểu static dispath là gì: trong case này có thể hiểu static dispath là việc tìm đúng địa chỉ của hàm cần gọi, trong case bình thường, khi không 
+dùng virtual method, thì khi chúng ta định nghĩa 1 hàm trong class thì lúc biên dịch thằng compiler nó sẽ lưu địa chỉ hàm và dùng để jump đến cái địa chỉ này để chạy hàm 
+mỗi khi hàm được gọi, là địa chỉ của dòng lệnh đầu tiên trong hàm thì phải (nhân tiện đây cũng là lý do mình có thể dùng con trỏ hàm)
 
 - lưu ý là mỗi hàm trong class sẽ có 1 địa chỉ tương ứng và là DUY NHẤT tồn tại và được sử dụng chung cho tất cả các đối tượng trong class đó 
 
 OK, dễ hiểu vlìn ?, bây giờ nói về vtable, vpointer and dynamic dispatch
 
-- á đù, trước tiên là lòi ra cái dynamic dispath: thì như nào ? là define ra 1 cái hàm, và nó có địa chỉ, thì lúc biên dịch, compiler xác định được luôn cái địa chỉ đó của hàm thì quá trình đó gọi là static dispath. Ngược lại, nếu nó không thể xác định trước được địa chỉ của hàm tại lúc biên dịch, mà phải xác định tại runtime, thì đó là dynamic dispath, trường hợp này sảy ra đối với hàm ảo - virtual method, 
+- á đù, trước tiên là lòi ra cái dynamic dispath: thì như nào ? là define ra 1 cái hàm, và nó có địa chỉ, thì lúc biên dịch, compiler xác định được luôn cái địa chỉ đó của 
+hàm thì quá trình đó gọi là static dispath. Ngược lại, nếu nó không thể xác định trước được địa chỉ của hàm tại lúc biên dịch, mà phải xác định tại runtime, thì đó là dynamic dispath, 
+trường hợp này sảy ra đối với hàm ảo - virtual method, 
 
 clean hơn 1 chút này: giữa class con và class cha thì k thể nạp chồng function, nó chỉ có thể định nghĩa lại, ta chỉ có thể nạp chồng function trong cùng 1 class,
 
@@ -279,6 +317,7 @@ là như sau: khi biên dịch chương trình, thì class có virtual method th
 vtable là 1 cái mà program nó tạo ra cho vpointer cuả class trỏ tới, chứ nó k nằm trong class, nó có mỗi liên hệ mật thiết với class chứ k phải là của hay là nằm trong class
 
 và đây là cách mà dynamic static hoạt động: trong runtime, 1 lời gọi đến 1 hàm ảo trên 1 đối tượng thì vpointer của đối tượng đó sẽ được sử dụng để tìm vtable tương ứng của class
+và cái vpointer có thể là protected từ class cha ban đầu thôi
 
 => trả lời câu hỏi, 1 class có virtual function thì size ít nhất bằng 8, vì nó tồn tại ít nhất 1 biến thành viên là vpointer
 
@@ -288,7 +327,7 @@ có nghĩa là sao nhỉ ? 1 là thằng vpointer hỏng 2 là thằng phần t�
 
 thế lỗi "undefined reference to `vtable for MethodXXX" thì cuối cùng là lỗi do vpointer không trỏ được đến vtable hay do thằng phần tử của vtable k trỏ được đến hàm hay trình biên dịch fail hay như thế nào nhỉ :))
 
-=================================================================================
+==================================================================================================================================================================
 
 CLASS 
 
@@ -325,7 +364,7 @@ A* x = new B;
 
 - việc dùng đa hình giải quyết được cái vấn đề là 1 con trỏ hoặc tham chiếu kiểu base trỏ vào 1 kiểu con !
 
-- member initializer lists: là khởi tại danh sách thành viên, nó sẽ khởi tạo theo thứ tự mình khai báo các biến,có 1 vài điểm khác nhau !
+- member initializer lists: là khởi tại danh sách thành viên, nó sẽ khởi tạo theo thứ tự mình khai báo các biến, lưu ý là KHỞI TẠO có 1 vài điểm khác nhau !
 
 Đã biết là khai báo với khởi tạo là khác đúng không, thì việc mà mình khai báo, xong gán giá trị ban đầu ở constructor nó khác với khởi tạo giá trị ban đầu (nhìn biến const là rõ liền), tỷ như:
 
@@ -352,7 +391,7 @@ A() : x{9}
 }
 -> cũng là khởi tạo x = 9 y như bên trên
 
-ví dụ class có 1 member là const int chẳng hản, thì phải khởi tạo giá trị ngay chứ k thể khai báo rồi để đấy, nếu k dùng initializer lists thì all object của class đều có 1 biến const int đó với giá trị giống nhau, chẳng thà đặt static mẹ đi, cơ mà mình muốn mỗi object có 1 const int đó với giá trị khác nhau, lúc này cần dùng initializer lists rồi
+ví dụ class có 1 member là const int chẳng hạn, thì phải khởi tạo giá trị ngay chứ k thể khai báo rồi để đấy, nếu k dùng initializer lists thì all object của class đều có 1 biến const int đó với giá trị giống nhau, chẳng thà đặt static mẹ đi, cơ mà mình muốn mỗi object có 1 const int đó với giá trị khác nhau, lúc này cần dùng initializer lists rồi
 
 class A{
 public:
@@ -365,8 +404,11 @@ const int mx;
 
 rõ ràng mỗi 1 lần create ra 1 object of A thì sẽ sử dụng được 1 giá trị mx khác nhau, lưu ý chỗ này là tạo ra rồi thì không có thay đổi được nữa đâu
 - trình tự khởi tạo các data member không phụ thuộc vào thứ tự chô mem list init, mà phụ thuộc vào lúc mình khai báo cái biến thành viên đó, từ trên xuống từ trái sang phải !
-- CONSTRUCTOR của class thì như nào !
 
+- nếu có biến thành viên là tham chiếu, kiểu int& ma, bản chất tham chiếu là phải khởi tạo chứ k thể khai báo xong để đó, nếu khi instance 1 object nó sẽ lỗi ngay, nhưng dùng member initializer lists
+thì nó lại hợp lý luôn, ngon lành, và phải đảm bảo được vòng đời của biến nó refer tới
+
+- CONSTRUCTOR của class thì như nào !
 -> quyết định xem liệu object có được tạo hay không, k có contructor nào phù hợp thì k tạo được object
 
 vài loại như sau: constructor mặc định (có define hoặc ẩn), constructor có tham số, copy constructor (có define hoặc ẩn) và move constructor, cũng có thể nạp chồng constructor bình thường vì đơn giản khi đó là có nhiều cách để tạo ra object !
@@ -440,7 +482,7 @@ public:
         LOG << "operator+ " << &x << " " << this;
         return *this;
     }
-    A operator++(){
+    A operator+(){
         LOG << "operator++";
         return *this;
     }
@@ -485,7 +527,7 @@ clean: nghĩa là áp dụng trong class thì hoàn toàn là do mình define n�
 
 - Operator Overloading in C++
 
-ví dụ: sử dụng class A bên tr
+ví dụ: sử dụng class A bên trên
 
 int main (){
 
@@ -494,6 +536,16 @@ int main (){
  
     return 0;
 }
+
+- Đặc biệt: overloading toán tử << và >> 
+mình không thể viết kiểu này được:
+    A operator << (type st){
+        LOG << "operator++";
+        return *this;
+    }
+-> A a; a << st tương đương với a.operator<<(st) -> HOÀN TOÀN SAI
+vì sao: vì ở đây << nó là toán tử được overloading cho cout cin rồi, mặc định nó sẽ dùng để in được những kiểu dữ liệu có sẵn, bây giờ mình muốn in ra như thế nào thì mình overload lại,
+nghĩa là mình overloading lại toán tử <<, >> của thằng cout cin cho nó có thể in ra cái đối tượng của mình
 
 - NHÂN TIỆN: THIS POINTER
 các hàm operator overload mà không có return cái gì để nó auto return giá trị rác về là oẳng !
@@ -554,7 +606,6 @@ int main (){
 - đối tượng const không thể gọi 1 hàm non-const dù hàm đó ko thay đổi giá trị của đối tượng
 - đối tượng non-const có thể gọi cả hàm const và non-const
 - hàm const thì ko thể thay đổi gía trị của object 
-
 - khi tạo object của class con, nó sẽ luôn gọi default contructor của base
 
 #include "logger.h"
@@ -594,8 +645,26 @@ int main(){
     return 0;
 }
 
+- không thể khởi tạo trực tiếp biến thành viên không tĩnh của class base ở constructor của class con vì, ở 1 constructor thông thường k có ủy quyền, thứ tự khởi tạo sẽ là khởi tạo base, khởi tạo các member không tĩnh, chạy thân hàm -> base khởi tạo nó cũng khởi tạo member của nó -> con k thể khởi tạo lại, -> chỉ có thể dùng ủy quyền
 
-=================================================================================
+class Base{
+public:
+correct:
+explicit Base(int x) : mx{x} {}
+
+protected:
+int mx;
+}
+
+class Child: public Base{
+public:
+explicit Child(int x) : mx{x} {} -> WRONG WRONG WRONG
+
+correct:
+explicit Child(int x) : Base{x} {}, vậy thì bây giờ trên class phải có contructor khởi tạo với 1 biến x
+}
+
+==================================================================================================================================================================
 
 9. STL Libsrary, std::function
 
@@ -724,9 +793,10 @@ for_each()
 
 File and Stream: https://www.geeksforgeeks.org/file-handling-c-classes/
 
-=================================================================================
+==================================================================================================================================================================
 
 10. Extern, liên kết ngoài - https://cafedev.vn/tu-hoc-c-c-lien-ket-ben-ngoai-trong-c/
+Tóm tắt trước: mọi thứ nên check ở cpp, vì ở cpp include .h thì mới được tính có khai báo, file .h chỉ là để cho gọn gẽ để include vào trong .cpp thôi
 liên kết là một thuộc tính của một định danh (không phải của một biến)
 
 - định danh có 1 thuộc tính khác có tên là liên kết, có nghĩa là nó sẽ xác định xem các khai báo khác của tên đó có tham chiếu đến cùng 1 đối tượng hay không, kiểu là khai báo tên như thế nhưng có phải chiếu đến cùng 1 đối tượng, 1 vùng nhớ hay không hay không, nếu không thì sẽ có chuyện liên quan đến phạm vi của biến
@@ -784,7 +854,7 @@ file b.cpp muôn dùng nó thì cần extern int g_x; -> nói rằng đây là 1
 
 - nếu khai báo extern mà không khởi tạo, nó sẽ hiểu là khai báo chuyển tiếp cho 1 thằng đã được define ở đâu đó rồi, nếu mà thằng nào cũng extern rồi k khởi tạo, rõ ràng sẽ bị lỗi không tìm thấy thằng nào đã tồn tại để mà tham ch
 
-=================================================================================
+==================================================================================================================================================================
 
 11. Exception handing and Signal handing
 
