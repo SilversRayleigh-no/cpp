@@ -15,6 +15,7 @@ Mục lục:
 9. STL Library FUNCTOR
 10. Extern, liên kết ngoài
 11. Exception Handing and Signal handing
+12. Casting
 
 ==================================================================================================================================================================
 
@@ -871,31 +872,79 @@ ví dụ: signal SIGSEGV được bắn ra khi mình truy cập vào vùng nhớ
 
 SIGBUS: truy cập vào 1 địa chỉ không hợp lệ
 
+==================================================================================================================================================================
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
+12. Casting
+static_cast<T>(expression): buộc chuyển đổi ngầm định, có thể cast non-const tới const, void* tới type*, pointer base* tới pointer derived*, pointer derived* tới base*
+- static_cast đương nhiên sẽ check tính tương thích có thể cast khi complier nhưng không check tính an toàn hay toàn vẹn, ví dụ, cast từ 1 kiểu derived* về kiểu base* có thể gây mất dữ liệu chẳng h
+- không thể cast từ const tới non-const -> chỉ có const_cast can do that
+- nếu không phải kế thừa thì không thể cast theo kiểu con trỏ or reference mean T can not be a pointer or reference
+- có thể cast 2 đối tượng chả liên quan gì tới nhau, thuộc 2 type khác nhau, chỗ này sẽ cần 1 contructor để cast - do cơ chế complier thôi, chịu, chắc nó kiểu wrap object
+ví dụ:
+class OneClass{
+public:
+    OneClass(){
+        cout << "contructor OneClass" << endl;
+    }
+    void display() {
+        cout << "one" << endl;
+    }
+    ~OneClass(){
+        cout << "distructor OneClass" << endl;
+    }
+    int onex;
+};
+class TwoClass{
+public:
+    TwoClass(OneClass& params) : mparams{params} {
+        cout << "contructor TwoClass" << endl;
+    }
+    void display() {
+        cout << "two: " << " " << &mparams << endl;
+    }
+    ~TwoClass(){
+        cout << "distructor TwoClass" << endl;
+    }
+    int twox;
+    OneClass& mparams;
+};
+int main () {
+    OneClass one;
+    static_cast<TwoClass>(one).display(); it can
+    return 0;
+}
+- chỗ này nó tạo 1 object temprary, mean cứ cast kiểu object thì nó sẽ tạo object temprary, nên mọi sự modify sẽ đươcj apply trên object temp đó chứ k phải trên current object
+=> dùng kiểu static_cast<type>(*this)->function() -> nó sẽ tạo ra tem object và thằng function sẽ được gọi trên tem object -> mọi modify sẽ trên tem object chứ k phải trên current object
+/*----------------------------------------------------------------------------------*/
+dynamic_cast<T>(expression) : chỉ chấp nhận cast kiểu con trỏ or reference, cast trong runtime, thực sự tốn kém vì nó so sánh và cast đến kiểu thực sự của object, nếu cast k thành công thì null
+ví dụ:
+class Animal{
+public:
+    virtual void func() {}
+};
+class Dog : public Animal{
+    public:
+    void makesound_dog(){}
+}
+class Cat : public Animal{
+    public:
+    void makesound_cat(){}
+}
+int main () {
+    Animal* dog = new Dog;
+    if(Dog* ds = dynamic_cast<Dog*>(dog)){ // Cat* cat = dynamic_cast<Cat*>(dog) // cast thành công thì trả về object, k thành công trả về null
+        cout << "ok" << endl;
+    }
+    else{
+        cout << "fail" << endl;
+    }
+    // hi vọng thằng Animal* dog có thể cast về kiểu Cat* để sau đó gọi makesound_cat, nhưng rõ ràng ko được -> gây crash
+    dynamic_cast<Cat*>(dog).makesound_cat(); // cast k thành công trả về null mà dùng thì hiển nhiên là gây crash rồi
+    // nếu thích mạo hiểm, dùng try catch sẽ k sao
+    try{
+        dynamic_cast<Cat*>(dog).makesound_cat();
+    }catch(...){}
+    return 0;
+}
+- phải có virtual thì mới cho dùng dynamic_cast
+- không được phép sử dụng một biến tham chiếu (hoặc con trỏ) là kết quả của việc ép kiểu mà không chắc chắn rằng việc ép kiểu đó thành công.
