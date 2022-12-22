@@ -2,7 +2,7 @@ Table Of Contents
 1. QQmlEngine
 2. QQmlApplicationEngine
 3. QQmlContext
-
+4. QQuickView
 
 ==================================================================================================================================================================
 
@@ -15,6 +15,9 @@ inherited by: QQmlApplicationEngine
 
 #include <QQmlEngine>
 Qt += qml
+
+- qmlengine(Qobject*) -> trả về QQmlEngine tương ứng cho cái object đó nếu có: QQmlEngine* engine = qmlEngine(QObject*)
+- thằng QQmlEngine thì nó k có cách thuận tiện nào để load 1 file qml, chỉ có thể khởi tạo instance QQmlComponent rồi gọi function create cho nó thôi
 
 *** qmlRegisterType : use to register 1 instantiable object type (dùng để đăng kí 1 C++ Object Type mà có thể khởi tạo được ở trên qml - khởi tạo bao nhiêu instance cũng được) ***
 
@@ -77,6 +80,8 @@ trên qml ***
 #include <QQmlApplicationEngine>
 Qt += qml
 
+- public lại thằng QQmlEngine, có hàm QQmlApplicationEngine::load để load 1 file qml cho nhanh, thực chất bên trong nó cũng instance 1 QQmlComponent* rồi ->create
+- tiện thể thì thằng QQuickView khi setSource cũng ý như thế, bên trong hàm setSource cũng tạo 1 instance QQmlComponent rồi gọi hamg create
 ==================================================================================================================================================================
 
 3. QQmlContext : public QObject
@@ -116,6 +121,48 @@ QObject obj = comp.create(child); // create component comp với context là chi
 biến x= 9 sẽ available với cả 3 file qml, nhưng biến y= 3 chỉ available với comp
 
 ==================================================================================================================================================================
+
+4. QQuickView : public QQuickWindow : public QQWindow : public QObject
+
+- khi mà mình khởi tạo 1 instance QQuickView, thì có 2 TH, 1 là truyền vào 1 tham số là QQmlEngine*, 2 là k có tham số QQmlEngine*, thì nó khác nhau thế nào ?
+: khởi tạo 1 instance QQuickView nó luôn gọi hàm init của QQuickViewPrivate trong constructor của QQuickView, trong hàm init đó nó sẽ create 1 QQmlEngine*, nếu mà
+mình truyền vào thì nó gán chứ khỏi cần tạo
+
+-> cái việc gọi rootObject hay rootContext là thằng QQmlEngine nó return về
+QQuickView::rootContext {
+	return QQmlEngine->rootContext()
+}
+
+- lý dó mà context nó giống hệt nhau đó, nó là 1
+- qmlengine(Qobject*) -> trả về QQmlEngine tương ứng cho cái object đó nếu có: QQmlEngine* engine = qmlEngine(QObject*)
+
+ví dụ:
+
+QQmlEngine* engine_1 = new QQmlEngine;
+
+QQuickView* view = new QQuickView(engine_1);
+view.setSource(source_path_qml) 
+/* (remember <=> QQmlComponent* component = new QQmlComponent(engine_1, source_path_qml); nếu không truyền vào engine_1 thì nó tự create ra 1 thằng QQmlEngine 
+rồi truyền vào component) */
+
+QQmlEngine* engine_2 = qmlEngine(view->rootObject); /* trả về 1 cái engine tương ứng với cái thằng rootObject này */
+
+NOTE: mình sẽ gọi thằng engine ban đầu truyền vào hoặc không truyền engine vào là engine_zero
+thì : engine_2 chính là engine_zero, thằng view thì cũng wrap engine_zero
+
+=> ví dụ context: engine_2->rootContext = view->rootContext = engine_zero->rootContext
+
+- mà chung context thì biết rồi đấy, pass data lên qml là nhận như nhau hết
+
+ĐÂY NÈ :
+	QQmlEngine* engine_zero = new QQmlEngine;
+    QQuickView* view = new QQuickView(engine_zero, nullptr);
+    view->setSource(QUrl::fromLocalFile("/home/quyle/untitled/main.qml"));
+
+    QQmlEngine* engine_1 = qmlEngine(view->rootObject());
+
+    qDebug() << "view->rootContext(): " << view->rootContext() << "engine_1->rootContext(): " << engine_1->rootContext() << "engine_zero->rootContext(): " << engine_zero->rootContext(); // is same
+    qDebug() << engine_zero << view->engine(); // is same
 
 
 
