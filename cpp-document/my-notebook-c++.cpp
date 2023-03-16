@@ -21,27 +21,70 @@ Mục lục:
 
 Data type: có 2 loại, 1 là các kiểu dữ liệu có sẵn, 2 là kiểu do user define ra, kể cả kiểu con trỏ hàm nhé, dùng typedef là được đấy!
 
-Hiện tại mình sẽ định nghĩa nó như thế này: 1 lvalue là 1 expression(n là 1 expression mà n+n cũng là 1 expression) mà refer tới 1 object, là cái mình có thể nhìn 
-thấy, có thể get được địa chỉ, có thể sửa được giá trị tại cái địa chỉ đó, ngược lại thì là rvalue 
+* lvalue và rvalue
+- lvalue là 1 expression mà refer tới 1 object, ta có thể get được address, có thể set value tại address đó
+- còn rvalue thường là 1 temporary value, ta không thể get được địa chỉ và set giá trị 1 cách trực tiếp cho nó như ta làm với lvalue
+đi kèm sẽ có 2 khái niệm là lvalue reference và rvalue reference ?
+- lvalue reference thì tham chiếu tới 1 lvalue
+và
+- rvalue reference tham chiếu tới 1 rvalue
+int a = 0; // - a là lvalue và 0 là rvalue
+int& b = a; //- b là biến tham chiếu tới a, là reference type int
+int&& r = 1+2;
+int&& r = 3;
+-> it is same
+- expression '1+2' creates temporary value - nó là rvalue with value là 3, rvalue reference r này sau đó được khởi tạo refer tới cái rvalue này
+- có thể truy cập contents của rvalue(đọc ghi oke) và extend lifetime của rvalue này through rvalue reference, nhớ là thông qua rvalue ref, chứ k phải trực tiếp
+- ta có thể dùng cout << &r để in địa chỉ của cái rvalue ref corresponds vói cái rvalue mà nó refer tới, chứ đấy cũng k phải là địa chỉ của original rvalue tạo ra bởi '1+2', vì ta k thể cout << &(1+2), vì cái rvalue nó k có 1 cái gọi là persistent memory: vùng nhớ valid tới cuối chương trình hoặc it nhất là tới lúc nó được hủy đi 1 cách explicit, rõ ràng
+- và temporary value được đại diện bởi cái rvalue và được created và destroyed bởi biểu thức '1+2', nhưng như đã nói ở trên, lifetime của nó sẽ được extend bởi thằng rvalue reference
 
-void function(int& n){
-    LOG << "lvalue reference";
-} (1)
+lvalue ref thì chỉ bind tới lvalue
+rvalue ref thì chỉ bind tới rvalue
+nhưng mà const lvalue ref thì lại bind được cả 2, vậy nên là 1 rvalue ref có thể implicit convert to const lvalue ref
 
-// rvalue reference
-void function(int&& n){
-    LOG << sizeof(n); // =4
-    n = 3; // yes, it can
-    LOG << "rvalue reference: " << n; // =3
-} (2)
-
-
+xem ví dụ về constructor:
+#include <iostream>
+using namespace std;
+class MClass{
+public:
+    MClass(){
+        cout << "default contructor" << endl;
+        mp = new int;
+    }
+    MClass(const MClass& tem) : mp{tem.mp}{
+        cout << "copy contructor" << endl;
+        // tem.mp = nullptr; -> can do that
+    }
+    MClass(MClass& tem) : mp{tem.mp}{
+        cout << "copy contructor" << endl;
+        tem.mp = nullptr;
+    }
+    MClass(MClass&& tem) : mp{tem.mp} {
+        cout << "move contructor" << endl;
+        tem.mp = nullptr;
+    }
+    int mx = 10;
+    int *mp;
+};
 int main (){
-
-    function(9); // call rvalue reference (2), cũng có thể call đến lvalua reference (1) nếu paramater là const int& nếu k define (2)
-    function(global); // call lvalue reference (1), có thể call đến rvalue reference (2) nếu call như sau: function(std::move(global))
+    cout << "start review !" << endl;
+    MClass a;
+    *(a.mp) = 20;
+    MClass b = a; (1) sẽ gọi copy consructor, vì đối số là 1 lvalue
+    MClass b = std:move(a); (2) sẽ gọi move constructor, vì đối số là 1 rvalue ref, nhưng cần thì nó có thể implicit convert tới const lvalue ref 
+    cout << "b.mp: " << " " << &(b.mp) << " " << b.mp << " " << *(b.mp) << endl;
+    if(a.mp == nullptr){
+        cout << "pointer is null" << endl;
+    }
+    else {
+        cout << "a.mp: " << " " << &(a.mp) << " " << a.mp << " " << *(a.mp) << endl;
+    }
     return 0;
 }
+- mình có thể thấy cái copy constuctor với non-const nó có thể làm 1 việc tương tự y hệt như move construcotr, nhưng rõ ràng là sai ý nghĩa của copy vì copy xong mà cho thằng cũ null mẹ luôn, ý là k dùng nữa
+- copy xong là còn dùng thằng cũ, còn move xong là k dùng thằng cũ nữa
+- std:move() nó trả về 1 rvalue ref tới thằng a, và nó có thể implicit convert to const lvalue ref nên nó thỏa mã để gọi đến copy constructor với tham số const, nhưng khi đấy thì đâu có thể change được cái gì nữa đâu, move xong mà thằng cũ vẫn còn nguyên
+-> cái cơ chế move sẽ là: gán 1 thằng vào 1 thằng đã có then cho thằng đã có về null -> đỡ tốn time phải tạo memory cho thằng mới rồi copy sang
 
 sử dụng rvalue reference hay std::move giúp ta loại bỏ được thao tác cấp phát, copy dữ liệu , hủy object, nói chung là kha khá performance
 
