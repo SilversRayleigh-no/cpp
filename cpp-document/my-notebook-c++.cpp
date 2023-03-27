@@ -175,20 +175,125 @@ std::unique_ptr<mclass> obunique2 = std::move(obunique1); -> cho nên đâu th�
 
 /*------------------------------------------------------------------------------------------------------------------------*/
 
-std::shared_ptr
-- quản lý thông qua 1 biếm đếm gọi là reference count
-- tăng giá trị biến đếm thông qua contructor của std::shared_ptr và giảm giá trị thông qua destructor
-copy assignment sẽ làm cả 2
-- reference count về tới 0, std::shared_ptr sẽ destroy
-- size gấp đôi size của raw pointer: vì gồm 2 raw pointer 1 trỏ tới resource, 1 trỏ tới control block có chứa reference count
+std::shared_ptr: share object own ship bởi nhiều đối tượng share_ptr với nhau
+- quản lý thông qua 1 biếm đếm gọi là reference count - nằm trong control block
+- thông thường tăng giá trị biến đếm thông qua constructor của std::shared_ptr và giảm giá trị thông qua destructor,
+copy assignment sẽ làm cả 2 (s1 = s2, giảm của s1 tăng của s2)
+
+std::shared_ptr<mclass> ob1(new mclass{});
+std::shared_ptr<mclass> ob2(ob1); -> tăng reference count
+
+but std::shared_ptr<mclass> ob2(std::move(ob1)); -> dont tăng reference count, vì thằng ob1 về null rồi nghĩa là nó k trỏ tới object nữa r
+
+- reference count về tới 0, the last std::shared_ptr sẽ destroy cái object mà nó point to
+- size gấp đôi size của raw pointer: vì cơ bản có thể hiểu gồm share pointer gồm có 2 "parts", 1 là raw pointer quản lý object, 2 là khối control block được quản lý nội bộ bởi đối tượng share pointer
 - memory cho reference count phải được cấp phát động
 - tăng giảm cho reference count phải là atomic
 - support custom deleter, but not like unique pointer, - custom deleter is not part of unique pointer type
-- control block sẽ chứa reference count/ weak pointer/ copy of custom deleter ...
-- share pointer phải tạo từ 1 share pointer, nếu tạo từ raw pointer thì nó sẽ có control block khác-  hiểu như control block được tạo ra từ thằng share pointer đầu tiên
+    auto customDelete1= [](mclass* ob){
+        cout << "customDelete1" << endl;
+        delete ob;
+    };
+
+    auto customDelete2= [](mclass* ob){
+        cout << "customDelete2" << endl;
+        delete ob;
+    };
+    std::shared_ptr<mclass> ob4(new mclass{}, customDelete1); -> nó tạo 1 control block
+    std::shared_ptr<mclass> ob5(new mclass{}, customDelete2); -> cũng tạo 1 control block
+    ob4 = ob5; -> delete object được trỏ bởi ob4, và line code này có thể thấy custom delete k phải là a part of type của share pointer
+    while(true){}
+
+nhưng nếu
+    std::shared_ptr<mclass> ob4(new mclass{}, customDelete1); ->  nó tạo 1 control block
+    std::shared_ptr<mclass> ob5(ob4); -> sẽ k cũng tạo 1 control block
+    ob4 = ob5; -> sẽ k có gì xảy ra cả
+và yeah, custom deleter sẽ k làm tăng size của share pointer, chắc chắn thì nó cũng cần memory để lưu trữ nhưng sẽ k phải là share_ptr
+- control block sẽ chứa reference count/ weak pointer/ copy of custom deleter allocator ...
+- share pointer phải tạo từ 1 share pointer, nếu tạo từ raw pointer thì nó sẽ có control block khác-  hiểu như control block được tạo ra từ thằng share pointer đầu tiên
 nếu tạo share pointer thông qua raw resource
 - dùng make_shared thì k thể dùng được custom deleter
+
 - truyền con trỏ this sẽ được tính là raw pointer, khi này dùng public std::enable_shared_from_this<Widget>
+ví dụ:
+
+#include header
+class Widget;
+std::vector<std::shared_ptr<Widget>> processedWidgets;
+class Widget {
+public:
+
+    void process(){
+        processedWidgets.emplace_back(this);
+        for(int i = 0; i<listmclass.size(); i++){
+            cout << "inside vector: " << listmclass[i].use_count() << endl;
+        }
+    }
+    …
+};
+
+int main (){
+
+    std::shared_ptr<Widget> sh_pt_1(new Widget{});
+    sh_pt_1->process();
+
+    std::shared_ptr<Widget> sh_pt_2(sh_pt_1);
+    cout << "hailn4" << endl;
+    sh_pt_2->process();
+
+    cout << "int fact: " << sh_pt_2.use_count() << endl;
+
+    std::shared_ptr<Widget> sh_pt_3(sh_pt_1);
+    cout << "hailn4" << endl;
+    sh_pt_3->process();
+
+    cout << "int fact: " << sh_pt_2.use_count() << endl;
+
+    return 0;
+}
+
+output:
+default contructor
+inside vector: 1
+hailnm4
+inside vector: 1
+inside vector: 1
+int fact: 2
+hailnm4
+inside vector: 1
+inside vector: 1
+inside vector: 1
+int fact: 3
+destructor
+destructor
+destructor
+destructor
+
+chỗ này là vì nó coi this là raw pointer, và khi truyền vào vector, nó tạo ra 1 share pointer khác trong vector từ this -> có 1 control block khác
+mới luôn, nên nhìn thấy count luôn bằng 1 trong vector, lúc hủy cũng có tận 4 thằng: 1 thằng ban đầu và 3 thằng create ra trong vector
+
+phải dùng như sau:
+class mclass : public std::enable_shared_from_this<Widget> {
+...
+}
+    void process(){
+        processedWidgets.emplace_back(shared_from_this());
+    }
+-> nó tạo share pointer trong vector và nó đồng bộ với share pointer bên ngoài vector luôn, chung control block
+default contructor
+inside vector: 2
+hailnm4
+inside vector: 4
+inside vector: 4
+int fact: 4
+hailnm4
+inside vector: 6
+inside vector: 6
+inside vector: 6
+int fact: 6
+destructor
+
+có thể thấy chỉ có 1 destructor, và ref count là luôn x đôi kìa
 
 /*------------------------------------------------------------------------------------------------------------------------*/
 
@@ -320,7 +425,7 @@ OK, dễ hiểu vlìn ?, bây giờ nói về vtable, vpointer and dynamic dispa
 hàm thì quá trình đó gọi là static dispath. Ngược lại, nếu nó không thể xác định trước được địa chỉ của hàm tại lúc biên dịch, mà phải xác định tại runtime, thì đó là dynamic dispath, 
 trường hợp này sảy ra đối với hàm ảo - virtual method, 
 
-clean hơn 1 chút này: giữa class con và class cha thì k thể nạp chồng function, nó chỉ có thể định nghĩa lại, ta chỉ có thể nạp chồng function trong cùng 1 class,
+clean hơn 1 chút này: giữa class con và class cha thì k thể nạp chồng function, nó chỉ có thể định nghĩa lại, ta chỉ có thể nạp chồng function trong cùng 1 class -> đây chính là đa hình tĩnh
 
 ví dụ nhá:
 
@@ -360,9 +465,9 @@ là như sau: khi biên dịch chương trình, thì class có virtual method th
 
 vtable là 1 cái mà program nó tạo ra cho vpointer cuả class trỏ tới, chứ nó k nằm trong class, nó có mỗi liên hệ mật thiết với class chứ k phải là của hay là nằm trong class
 
-và đây là cách mà dynamic static hoạt động: trong runtime, 1 lời gọi đến 1 hàm ảo trên 1 đối tượng thì vpointer của đối tượng đó sẽ được sử dụng để tìm vtable tương ứng của class
-và cái vpointer có thể là protected từ class cha ban đầu thôi
+và đây là cách mà dynamic static hoạt động: trong runtime, 1 lời gọi đến 1 hàm ảo trên 1 đối tượng thì vpointer của đối tượng đó sẽ được sử dụng để tìm vtable tương ứng của class, sau đó trỏ tới đúng function cần gọi
 
+-> note: vpointer thường được tạo ra ở private của class, nên mình sẽ thiên về việc hiểu mỗi 1 class sẽ có 1 vpointer riêng 
 => trả lời câu hỏi, 1 class có virtual function thì size ít nhất bằng 8, vì nó tồn tại ít nhất 1 biến thành viên là vpointer
 
 - Vậy, đã có vài lần build mà bị bệnh là undefined reference to `vtable for MethodXXX
