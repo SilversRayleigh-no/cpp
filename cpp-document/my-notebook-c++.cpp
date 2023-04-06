@@ -16,6 +16,7 @@ Mục lục:
 10. Extern, liên kết ngoài
 11. Exception Handing and Signal handing
 12. Casting
+13. lambda
 
 ==================================================================================================================================================================
 
@@ -137,9 +138,9 @@ nhớ đó thông qua con trỏ
 k thể thay đổi giá trị nó trỏ đến thông qua nó
 
 chốt lại:
-- type*: thoải mái
-- const type*: không thay đổi được giá trị thông qua con trỏ == type const*
-- type* const: không trỏ đi chỗ khác được
+- type* p: thoải mái
+- const type* p: không thay đổi được giá trị thông qua con trỏ == type const*
+- type* const p: không trỏ đi chỗ khác được
 
 => NHẬN RA: * sẽ là cái nhận biết const sẽ aplly cho cái nào, trước * thì apply cho kiểu trỏ đến (hằng hay ko), sau * thì apply cho con trỏ(con trỏ hằng hay là ko)
 
@@ -505,15 +506,14 @@ class A;
 class B : public A
 
 A* x = new B;
-
 - thì x sẽ không thao tác được các tài nguyên trong B mà chỉ thao tác được trong bản thân nó là A, means nó ưu tiên kiểu dữ liệu con trỏ chứ k ưu tiên kiểu dữ liệu của đối tượng được trỏ
-
 - nạp chồng hàm + virtual -> đa hình: mà khi dùng đa hình rồi nó sẽ giải quyết được vấn đề bên trên
+
 - class con chỉ có thể định nghĩa lại cái hàm đã khai báo ở class cha chứ không thể nạp chồng hàm của class cha tại class con, (giống return, giống tên hàm, giống tham số)
 
 - việc dùng đa hình giải quyết được cái vấn đề là 1 con trỏ hoặc tham chiếu kiểu base trỏ vào 1 kiểu con !
 
-- member initializer lists: là khởi tại danh sách thành viên, nó sẽ khởi tạo theo thứ tự mình khai báo các biến, lưu ý là KHỞI TẠO có 1 vài điểm khác nhau !
+- member initializer lists: là khởi tại danh sách thành viên, nó sẽ khởi tạo theo thứ tự mình khai báo các biến, lưu ý là KHAI BÁO vs KHỞI TẠO có 1 vài điểm khác nhau !
 
 Đã biết là khai báo với khởi tạo là khác đúng không, thì việc mà mình khai báo, xong gán giá trị ban đầu ở constructor nó khác với khởi tạo giá trị ban đầu (nhìn biến const là rõ liền), tỷ như:
 
@@ -1096,3 +1096,155 @@ int main () {
 }
 - phải có virtual thì mới cho dùng dynamic_cast
 - không được phép sử dụng một biến tham chiếu (hoặc con trỏ) là kết quả của việc ép kiểu mà không chắc chắn rằng việc ép kiểu đó thành công.
+
+==================================================================================================================================================================
+
+13. lambda
+
+- A closure class is a class from which a closure is instantiated. Each lambda causes
+compilers to generate a unique closure class. The statements inside a lambda
+become executable instructions in the member functions of its closure class.
+
+- A closure is the runtime object created by a lambda. Depending on the capture
+mode, closures hold copies of or references to the captured data
+
+- closure class -> class ẩn được complier gen ra mà mình chả rõ chính xác type của nó là gì, mỗi lamdba sẽ làm cho complier gen ra 1 unique closure class
+
+* ví dụ
+class Widget {
+...
+}
+- thì nó tường mình và mọi instance đều có type là Widget, nhưng closure class thì chả biết type của instance của nó là gì -> dùng auto thôi
+
+- thì thằng lambda bản chất nó là nó trả về 1 instance của closure class, do đó phải dùng biến auto đấy, có nghĩa nó là 1 object đấy
+
+*** kiểu
+Widget returnWidget(){
+    return Widget;
+}
+Widget wd = returnWidget();
+
+
+closure_class lambda(){
+    return closure_class;
+}
+
+auto lambda = [](){}; mean [](){} là 1 biểu thức lambda nó sẽ trả về 1 instance của 1 closure_class mà gen ra từ complier 
+
+[](){}()
+[]: capture
+(): tham số
+{}: thân hàm của lambda
+(): truyền giá trị cho tham số và run lambda
+
+-> nó tương tự như khai báo lambda bên trên và call nó chạy lambda();
+
+- và cái việc chạy [](){}() hay là lambda() nó tương tự như kiểu chạy function object của class thôi 
+
+*** ví dụ :
+    int lambda = []() ->  int{
+        static int n = 1;
+        n++;
+        cout << "lambda: " << n << endl;
+        return n;
+    };
+    
+nó sẽ kiểu kiểu như:    
+    class closure_class {
+        public :
+            int operator () {
+                static int n = 1;
+                n++;
+                cout << "lambda: " << n << endl;
+                return n;
+            }
+    }
+- type return về và tham số truyền vào thì tùy vào lambda như thế nào
+
+*** về capture: có 2 kiểu là capture by value và capture by reference
+việc mình capture làm cho cái closure sẽ gen ra variable tương ứng trong scope nơi lambda được define, nếu capture by value gen 1 biến value bình thường và gán cho giá trị "bằng" thôi,
+còn capture by reference thì nó tạo biến reference tới cái biến nó capture
+-> nếu mà lifetime của closure created from lambda tồn tại lâu hơn cái biến được capture -> cái biến reference trong closure tồn tại lâu hơn -> trạng thái dangle
+
+ví dụ:
+using FilterContainer = std::vector<std::function<bool(int)>>; có 1 cái vector chứa các con trỏ hàm
+FilterContainer filters;
+
+void addDivisorFilter()
+{
+    auto calc1 = computeSomeValue1();
+    auto calc2 = computeSomeValue2();
+    auto divisor = computeDivisor(calc1, calc2);
+    filters.emplace_back( // danger!
+                          [&](int value) { return value % divisor == 0; } // ref to
+    ); // divisor
+}
+
+- divisor là 1 biến thuộc scope funtion addDivisorFilter, nó sẽ bị hủy, nó sẽ k còn tồn tại khi hàm này kết thúc
+- filters là 1 biến global, bây giờ add cái lambda đó làm 1 phần tử trong vector, thì mỗi lần gọi phần tử đó ra, cái biến ref trong lambda refer to divisor
+mà thằng divisor bị hủy cụ rồi -> dangle -> undefine behavior
+
+ví dụ khác:
+using FilterContainer = std::vector<int*>;
+FilterContainer filters;
+
+void addDivisorFilter()
+{
+    int n = 9;
+    cout << &n << endl;
+    filters.push_back( [&](){
+        return &n;
+    }());
+}
+
+int main (){
+    cout << "start" << endl;
+    addDivisorFilter();
+    int n = 9;
+    cout << filters[0] << " " << *(filters[0]) << endl;
+
+    return 0;
+}
+
+-> nếu mà cái vùng nhớ của cái biến trong funtion bị hủy đi r, bị sử dụng rồi, thì sẽ oẳng, còn nó vẫn còn free thì nó vẫn chọc vào được và vẫn chạy thôi => thế mới gọi là Undefine Behavior
+
+-> trong TH này thì chỉ captured by value thôi
+- capture by value cũng có thể dangle khi value lại là con trỏ 
+
+- chú ý lambda trong function member của class, capture kiểu [=] hoặc là [&] đều là capture con trỏ this thôi
+
+*** OKE, Now read here: Use init capture to move objects into closures.
+- đã hiểu closure rồi thì hiểu move object tới closure nó cũng ảo ấy chứ
+nhắc lại: bản chất của lambda là nó return về 1 instance của closure classs và nó chạy như 1 functor luôn, thế nên cái đoạn int capture nó như mình khởi tạo biến thành viên
+của cái class closure đó thôi
+
+Using an init capture makes it possible for you to specify
+1. the name of a data member in the closure class generated from the lambda and
+2. an expression initializing that data member.
+
+class Widget;
+auto pw = std::make_unique<Widget>(); // create Widget;
+auto func = [pw = std::move(pw)] // init data mbr
+ { return pw->isValidated() // pw dùng ở đây là pw của closure class
+ && pw->isArchived(); };
+
+- bên trái dấu "=" là tên của data member trong closure class, bên phải dấu "=" là biểu thức khởi tạo , scope trái phải là khác nhau
+scope bên trái là của closure class - nó tương đương với scope của thằng auto lambda kia, scope bên phải là của thằng pw local bên trên
+pw bên trái refer to data member trong closure class, pw bên phải là cái biến bên trên lambda đó
+
+So “pw = std::move(pw)” means “create
+a data member pw in the closure, and initialize that data member with the result of
+applying std::move to the local variable pw.”
+
+làm rõ 
+auto func = [pw = std::move(pw)] // init data mbr
+ { return pw->isValidated() // pw dùng ở đây là pw của closure class
+ && pw->isArchived(); };
+-> khai báo lambda, lúc này lambda chưa hề chạy, nó trả về 1 instance của closure class và gán và auto -> khi nào auto bị hủy thì 
+thằng pw bên trong mới bị hủy
+ và
+
+ [pw = std::move(pw)] // init data mbr
+ { return pw->isValidated() && pw->isArchived(); }();
+ -> còn ở đây nó chạy mẹ luôn rồi, nó trả về instance của closure class nhưng k gán cho 1 thằng nào để extend vòng đời của nó nên nó bị 
+ hủy luôn ngay sau khi gọi
