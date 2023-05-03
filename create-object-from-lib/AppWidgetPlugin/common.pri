@@ -1,2 +1,0 @@
-TEMPLATE = lib
-CONFIG += c++11
